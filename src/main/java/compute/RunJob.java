@@ -5,28 +5,23 @@ import org.pcj.PCJ;
 import org.pcj.StartPoint;
 import org.pcj.Storage;
 import org.pcj.RegisterStorage;
-
-/*
-author: Krzysztof Płuciennik
-*/
+import utils.Complex;
 
 @RegisterStorage(RunJob.Shared.class)
 public class RunJob implements StartPoint {
 
     @Storage(RunJob.class)
-    enum Shared { nAll, A, B, C, startTime}
-    int nAll = 1048576;
-    double[] A = new double[nAll];
-    double[] B = new double[nAll];
-    double[] C = new double[nAll];
-    long startTime;
+    enum Shared { nAll, A}
+    long nAll = 1048576L;
+    Complex[] A = new Complex[Math.toIntExact(nAll)];
 
     @Override
     public void main() {
         PCJ.barrier();
 
-
-
+        for (int i =0; i < nAll; i++){
+            A[i] = new Complex(1, 2);
+        }
     }
 
     public static void main(String[] args) throws Throwable {
