@@ -28,15 +28,7 @@ public class RunJob implements StartPoint {
             }
             PCJ.broadcast(A, Shared.A);
         }
-        int processId = PCJ.myId();
-        int numerOfProcesses = PCJ.threadCount();
-        PCJ.barrier();
 
-        for (int i = (processId * (nAll / numerOfProcesses)); i < nAll; i++) {
-            A[i] = A[i] * A[i];
-        }
-
-        System.out.println("Proccessor nr: " + processId);
     }
 
     public static void main(String[] args) throws Throwable {
