@@ -1,6 +1,8 @@
 package compute;
 
 import java.io.File;
+import java.util.Random;
+
 import org.pcj.PCJ;
 import org.pcj.StartPoint;
 import org.pcj.Storage;
@@ -12,16 +14,29 @@ public class RunJob implements StartPoint {
 
     @Storage(RunJob.class)
     enum Shared { nAll, A}
-    long nAll = 1048576L;
-    Complex[] A = new Complex[Math.toIntExact(nAll)];
+    int nAll = 10480000;
+    int[] A = new int[nAll];
 
     @Override
     public void main() {
+
+        if (PCJ.myId() == 0){
+            Random rand = new Random();
+
+            for (int i = 0; i < nAll; i++){
+                A[i] = rand.nextInt();
+            }
+            PCJ.broadcast(A, Shared.A);
+        }
+        int processId = PCJ.myId();
+        int numerOfProcesses = PCJ.threadCount();
         PCJ.barrier();
 
-        for (int i =0; i < nAll; i++){
-            A[i] = new Complex(1, 2);
+        for (int i = (processId * (nAll / numerOfProcesses)); i < nAll; i++) {
+            A[i] = A[i] * A[i];
         }
+
+        System.out.println("Proccessor nr: " + processId);
     }
 
     public static void main(String[] args) throws Throwable {

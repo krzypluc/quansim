@@ -54,6 +54,11 @@ public class Complex {
         return new Complex(real, imag);
     }
 
+    public Complex times(int b) {
+        Complex a = this;
+        return new Complex(b * a.re, b * im);
+    }
+
     // return a new object whose value is (this * alpha)
     public Complex scale(double alpha) {
         return new Complex(alpha * re, alpha * im);
