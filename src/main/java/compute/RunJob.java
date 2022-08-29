@@ -1,6 +1,9 @@
 package compute;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 import org.pcj.PCJ;
 import org.pcj.StartPoint;
@@ -10,29 +13,39 @@ import org.pcj.RegisterStorage;
 @RegisterStorage(RunJob.Shared.class)
 public class RunJob implements StartPoint {
 
-    @Storage(RunJob.class)
-    enum Shared {nAll, threadCount, array}
+    static final int RESOLUTION_EXPOTENTIAL = 6;
+    static final int PERIOD_EXPOTENTIAL = 3;
 
-    int nAll = 10480000;
+    static double PI = Math.PI;
+    static double period = PERIOD_EXPOTENTIAL * Math.PI;
+
+    @Storage(RunJob.class)
+    enum Shared {resolution, threadCount, waveFunction, x}
+
+    int resolution = (int) Math.pow(2, RESOLUTION_EXPOTENTIAL);
     int threadCount =  PCJ.threadCount();
-    Complex array;
+    ArrayList<Complex> waveFunction = new ArrayList<>();
+    ArrayList<Complex> x = new ArrayList<>();
 
     @Override
     public void main() {
-        double PI = Math.PI;
 
         if (PCJ.myId() == 0) {
-            array = new Complex(1, 1);
-//            for (int i=0; i< nAll; i++){
-//                array[i] = new Complex(i, i);
-//            }
 
-            PCJ.broadcast(array, Shared.array);
+            double step = period / resolution;
+            for (double i = -(period / 2); i <= (period / 2); i += step){
+                Complex elem = new Complex(i, 0);
+                x.add(new Complex(i, 0));
+                waveFunction.add(utils.functionsMisc.waveFunction(elem));
+            }
+
+            PCJ.broadcast(x, Shared.x);
+            PCJ.broadcast(waveFunction, Shared.waveFunction);
         }
 
         PCJ.barrier();
 
-        if (PCJ.myId() == 3) System.out.println(array.add(array));
+        if (PCJ.myId() == 3) System.out.println(waveFunction.get(31));
 
     }
 

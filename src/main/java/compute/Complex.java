@@ -6,9 +6,18 @@ public class Complex implements Serializable {
     double real;
     double imag;
 
+    static final double DEFAULT_REAL = 0.0;
+    static final double DEFAULT_IMAG = 0.0;
+
+
     public Complex(double real, double imag) {
         this.real = real;
         this.imag = imag;
+    }
+
+    public Complex() {
+        this.real = DEFAULT_REAL;
+        this.imag = DEFAULT_IMAG;
     }
 
     public double getReal() {
@@ -45,7 +54,7 @@ public class Complex implements Serializable {
     }
 
     public Complex multiply(int b){
-        return new Complex(this.getReal() * b, this.getImag());
+        return new Complex(this.getReal() * b, this.getImag() * b);
     }
 
     public Complex conjugation(){
