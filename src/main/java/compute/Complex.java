@@ -44,7 +44,7 @@ public class Complex implements Serializable {
 
     public Complex multiply(Complex b){
         double real = this.getReal() * b.getReal() - this.getImag() * b.getImag();
-        double imag = this.getReal() * b.getImag() - this.getImag() * b.getReal();
+        double imag = this.getReal() * b.getImag() + this.getImag() * b.getReal();
 
         return new Complex(real, imag);
     }
@@ -63,6 +63,13 @@ public class Complex implements Serializable {
 
     public double modulus(){
         return Math.sqrt(this.getReal() * this.getReal() + this.getImag() * this.getImag());
+    }
+
+    public static Complex expotential(Complex a){
+        double real = Math.exp(a.getReal()) * Math.cos(a.getImag());
+        double imag = Math.exp(a.getReal()) * Math.sin(a.getImag());
+
+        return new Complex(real, imag);
     }
 
     @Override
