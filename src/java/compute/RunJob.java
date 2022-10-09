@@ -1,14 +1,24 @@
 package compute;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
 import org.pcj.*;
 
 import static java.lang.Math.PI;
+import static utils.functions.initYandX;
 import static utils.functions.waveFunction;
 import static utils.integrator.TrapezoidComplex1D;
+import static utils.parallelFFT.FFTComplex1D;
 
-import org.apache.commons.numbers.complex.Complex;
+// import org.apache.commons.numbers.complex.Complex;
 
 
 @RegisterStorage(RunJob.SharedRunJob.class)
@@ -21,14 +31,15 @@ public class RunJob implements StartPoint {
     static final double period = PERIOD_EXPOTENTIAL * PI;
 
     @Storage(RunJob.class)
-    protected enum SharedRunJob {
-        x, y, integral
+    public enum SharedRunJob {
+        x, y, integral, nextYFragment
     }
 
     // One dimensional wave function: x - arguments, y - values
     private double[] x = new double[RESOLUTION];
     private Complex[] y = new Complex[RESOLUTION];
     private Complex integral = Complex.ZERO;
+    private ArrayList<Complex> nextYFragment = new ArrayList<Complex>();
 
     @Override
     public void main() throws Throwable {
@@ -39,33 +50,12 @@ public class RunJob implements StartPoint {
         int lengthOfpiece = (int) y.length / procCount;
         double dx = period / (RESOLUTION - 1);
 
-        // Calculate values of initial wave function
-        Complex sumOfValues = Complex.ZERO;
-        Complex firstValue = Complex.ZERO;
-        Complex lastValue = Complex.ZERO;
-
-        for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
-            x[i] = (-period / 2) + dx * i;
-            y[i] = waveFunction(Complex.ofCartesian(x[i], 0));
-            sumOfValues = sumOfValues.add(y[i]);
-
-            // Saving first value - use in integral
-            if (i == procID * lengthOfpiece) {
-                firstValue = y[i];
-            }
-
-            // Saving last value - use in integral
-            if (i == (procID + 1) * lengthOfpiece - 1) {
-                lastValue = y[i];
-            }
-        }
-
-        // Caculate integral
-        integral = sumOfValues
-                .multiply(2.0)
-                .subtract(lastValue)
-                .subtract(firstValue)
-                .multiply(dx / 2);
+        // Calculate values of initial wave function.
+        // Getting and casting all values from returned array.
+        Object[] initVal = initYandX(y, x, period, dx);
+        y = (Complex[]) initVal[0];
+        x = (double[]) initVal[1];
+        integral = (Complex) initVal[2];
 
         // Calculate integral and share to processes
         if (procID == 0) {
@@ -73,7 +63,7 @@ public class RunJob implements StartPoint {
                     // Lambda operator / reductor
                     (subtotal, element) -> subtotal.add(element),
                     SharedRunJob.integral);
-
+            // Broadcast to all processes
             PCJ.broadcast(coll, SharedRunJob.integral);
         }
 
@@ -94,7 +84,13 @@ public class RunJob implements StartPoint {
                     procIncr++;
                 }
             }
+            PCJ.broadcast(x, SharedRunJob.x);
+            PCJ.broadcast(y, SharedRunJob.y);
         }
+
+        // FFT
+        PCJ.waitFor(SharedRunJob.y);
+        Complex[] transformed = FFTComplex1D(y);
 
     }
 

@@ -1,11 +1,12 @@
 package utils;
 
-import org.apache.commons.numbers.complex.Complex;
+
+import org.apache.commons.math3.complex.Complex;
 
 public class integrator {
     public static Complex TrapezoidComplex1D(Complex[] y, double[] x) {
         double dx = x[1] - x[0];
-        
+
         double sumReal = 0, sumImag = 0;
         double valReal, valImag;
 
@@ -16,7 +17,7 @@ public class integrator {
             sumImag += valImag;
         }
 
-        return Complex.ofCartesian(sumReal, sumImag);
+        return Complex.valueOf(sumReal, sumImag);
     }
 
     public static double TrapezoidDouble1D(double[] y, double[] x) {
