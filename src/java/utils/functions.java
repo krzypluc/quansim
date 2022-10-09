@@ -1,16 +1,14 @@
 package utils;
 
-import compute.Complex;
+import org.apache.commons.numbers.complex.Complex;
+import org.apache.commons.numbers.complex.Complex;
 
 public class functions {
-    public static Complex waveFunction(Complex x){
-        Complex arg = x.multiply(x);
-        arg = arg.multiply(-1);
+    public static Complex waveFunction(Complex x) {
+        // valueOfExpotential = -1 * x^2
+        Complex valueOfExpontetial = x.multiply(x).multiply(-1);
 
-        double epowa = Math.exp(arg.getReal());
-        double cosb = Math.cos(arg.getImag());
-        double sinb = Math.sin(arg.getImag());
-
-        return new Complex(epowa * cosb, epowa * sinb);
+        // returns e^((-1) * x^2)
+        return valueOfExpontetial.exp();
     }
 }
