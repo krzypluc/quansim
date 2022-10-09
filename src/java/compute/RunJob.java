@@ -6,6 +6,7 @@ import org.pcj.*;
 
 import static utils.functions.waveFunction;
 
+import utils.
 
 @RegisterStorage(RunJob.SharedRunJob.class)
 public class RunJob implements StartPoint {
