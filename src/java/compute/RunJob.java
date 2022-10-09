@@ -69,7 +69,11 @@ public class RunJob implements StartPoint {
 
         // Calculate integral and share to processes
         if (procID == 0) {
-            Complex coll = PCJ.reduce((subtotal, element) -> subtotal.add(element), SharedRunJob.integral);
+            Complex coll = PCJ.reduce(
+                    // Lambda operator / reductor
+                    (subtotal, element) -> subtotal.add(element),
+                    SharedRunJob.integral);
+
             PCJ.broadcast(coll, SharedRunJob.integral);
         }
 
@@ -89,8 +93,6 @@ public class RunJob implements StartPoint {
                 if ((i + 1) % lengthOfpiece == 0) {
                     procIncr++;
                 }
-
-                PCJ.collect()
             }
         }
 
