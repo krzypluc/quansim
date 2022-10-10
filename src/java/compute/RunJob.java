@@ -39,7 +39,7 @@ public class RunJob implements StartPoint {
     private double[] x = new double[RESOLUTION];
     private Complex[] y = new Complex[RESOLUTION];
     private Complex integral = Complex.ZERO;
-    private ArrayList<Complex> nextYFragment = new ArrayList<Complex>();
+    public Complex[] nextYFragment = new Complex[];
 
     @Override
     public void main() throws Throwable {
