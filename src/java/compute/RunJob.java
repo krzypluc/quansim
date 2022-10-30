@@ -3,6 +3,7 @@ package compute;
 import java.io.*;
 import java.util.*;
 
+import ch.systemsx.cisd.hdf5.*;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
@@ -10,8 +11,8 @@ import org.apache.commons.math3.transform.TransformType;
 import org.pcj.*;
 import utils.DFT;
 
-import static compute.RunJob.SharedRunJob.nextYFragment;
 import static java.lang.Math.PI;
+import static java.lang.Math.log;
 import static utils.functions.initYandX;
 import static utils.functions.waveFunction;
 import static utils.integrator.TrapezoidComplex1D;
@@ -22,7 +23,7 @@ import static utils.integrator.TrapezoidComplex1D;
 @RegisterStorage(RunJob.SharedRunJob.class)
 public class RunJob implements StartPoint {
 
-    static final int RESOLUTION_EXPOTENTIAL = 5;
+    static final int RESOLUTION_EXPOTENTIAL = 3;
     static final int PERIOD_EXPOTENTIAL = 6;
     public static final int RESOLUTION = (int) Math.pow(2, RESOLUTION_EXPOTENTIAL);
 
@@ -30,14 +31,15 @@ public class RunJob implements StartPoint {
 
     @Storage(RunJob.class)
     public enum SharedRunJob {
-        x, y, integral, nextYFragment
+        x, y, integral, transformedFromTheNextProcess, transformed
     }
 
     // One dimensional wave function: x - arguments, y - values
     private double[] x = new double[RESOLUTION];
     private Complex[] y = new Complex[RESOLUTION];
     private Complex integral = Complex.ZERO;
-    public Complex[] nextYFragment;
+    public Complex[] transformedFromTheNextProcess = new Complex[0];
+    Complex[] transformed;
 
     @Override
     public void main() throws Throwable {
@@ -89,11 +91,9 @@ public class RunJob implements StartPoint {
             PCJ.asyncBroadcast(y, SharedRunJob.y);
         }
         PCJ.waitFor(SharedRunJob.y);
-
-
         /*
         ------------- FFT LOOP
-         */
+
 
         // Fragment of wave function which is handled by a process.
         Complex[] yFragment = new Complex[lengthOfpiece];
@@ -118,39 +118,71 @@ public class RunJob implements StartPoint {
             }
 
         }
-        // Hash set with numbers of processes. Hash set is used for speed.
-        HashSet<Integer> processesNumbers = new HashSet<Integer>();
-
-        // Add a number of processes to hash set.
-        for (int i = 0; i < procCount; i++) {
-            processesNumbers.add(i);
-        }
 
         // Initiate FFT in each process.
         FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
 
         // Calculate FFT of a fragment.
-        Complex[] transformed = fft.transform(yFragment, TransformType.FORWARD);
+        transformed = fft.transform(yFragment, TransformType.FORWARD);
         // Complex[] transformed = DFT.forwardDFT(yFragment);
 
         // Fragment buffer is used for buffing a fragment of wave function previously used by a process.
         Complex[] yFragmentBuffer;
 
-        // "Worked previously" value is used to determine, if the certain process was working in the previous loop.
-        // Due to the fact, that FFT is not stationary, only in the first loop, all of the processes are working.
-        // The next loop is always working with a 2 times less processes due to the reducing.
-        boolean workedPreviously = true;
-
-        // Exp loop number is a numbers of 2^n, where n is the number of the current loop.
-        // Is is used to determine to which process should current process transfer the data.
-        int expLoopNumber = 1;
-
-        // Buffer used in the
-        HashSet<Integer> processesNumbersBuffer = new HashSet<Integer>();
         Complex p;
         Complex q;
-        int N;
+        int N = y.length;
         int k;
+
+        int numberOfLoops = (int) (log(procCount) / log(2));
+
+        int sizeOfGroup = 1;
+        int expLoopCounter = 1;
+        double groupIdBuffer;
+        int groupId;
+        int communicateWith = -1;
+
+        for (int i = 0; i < numberOfLoops; i++){
+            groupIdBuffer = (double) (procID / sizeOfGroup);
+            groupId = (int) groupIdBuffer;
+
+            // Even communicate with next processes
+            if (groupId % 2 == 0) {
+                communicateWith = procID + expLoopCounter;
+            }
+
+            // Odd processes communicate with previous processes.
+            else {
+                communicateWith = procID - expLoopCounter;
+            }
+
+            transformedFromTheNextProcess = transformed;
+
+            PCJ.asyncPut(transformed, communicateWith, SharedRunJob.transformedFromTheNextProcess);
+            PCJ.waitFor(SharedRunJob.transformedFromTheNextProcess, i);
+            transformedFromTheNextProcess = (Complex[]) PCJ.get(communicateWith, SharedRunJob.transformedFromTheNextProcess);
+
+            if (groupId % 2 == 0) {
+                for (int l = 0; l < transformed.length; l++){
+                    p = transformed[l];
+                    q = Complex.I.multiply(-2 * PI * l / N).exp().multiply(transformedFromTheNextProcess[l]);
+                    transformed[l] = p.add(q);
+                }
+            } else {
+                for (int l = 0; l < transformed.length; l++) {
+                    p = transformedFromTheNextProcess[l];
+                    q = Complex.I.multiply(-2 * PI * l / N).exp().multiply(transformed[l]);
+                    transformed[l] = p.subtract(q);
+                }
+            }
+
+            sizeOfGroup = sizeOfGroup * 2;
+            expLoopCounter = expLoopCounter * 2;
+        }
+
+        // Old fft fragment
+        /*
+
 
         // While is checking if the number of processes currently working is more than 1.
         while (processesNumbers.size() > 1) {
@@ -204,21 +236,56 @@ public class RunJob implements StartPoint {
             expLoopNumber = expLoopNumber * 2;
         }
 
+
+
         PCJ.barrier();
 
-        FastFourierTransformer fftCheck = new FastFourierTransformer(DftNormalization.STANDARD);
-        // Calculate FFT of a fragment.
-        Complex[] transformedCheck = fftCheck.transform(y, TransformType.FORWARD);
+        if (procID == 0){
+            Complex[] buffer;
+            Complex[] outcome = new Complex[y.length];
+            for (int l = 1; l < procCount; l++){
+                buffer = (Complex[]) PCJ.get(l, SharedRunJob.transformed);
 
-        if(procID == 0){
-            for(int i = 0; i < transformedCheck.length; i++){
-                System.out.println("Real: " + transformedCheck[i]);
-                System.out.println("Parallel: " + transformed[i]);
+                j = 0;
+                for (int m = (l * (y.length / procCount)); m < ((l + 1) * (y.length / procCount)); m++){
+                    outcome[m] = buffer[j];
+                    j++;
+                }
             }
+
+            Complex[] transformedCheck = fft.transform(y, TransformType.FORWARD);
+
+            for (Complex nbr : transformedCheck){
+                System.out.println(nbr);
+            }
+            System.out.println("-----");
+            for (Complex nbr : outcome){
+                System.out.println(nbr);
+            }
+
+            */
+
+        FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
+
+        Complex[] y_transformed = fft.transform(y, TransformType.FORWARD);
+        double[] freq = DFT.freq(x);
+
+        if (procID == 0) {
+            IHDF5Writer writer = HDF5Factory.open("hdf5/myfile.h5");
+            writer.writeDoubleArray("x", x);
+
+            double[][] yTransformedDouble = new double[y.length][2];
+            for (int i = 0; i < y.length; i++){
+                yTransformedDouble[i][0] = y_transformed[i].getReal();
+                yTransformedDouble[i][1] = y_transformed[i].getImaginary();
+            }
+
+            writer.writeDoubleMatrix("y", yTransformedDouble);
+            writer.close();
         }
 
-        PCJ.barrier();
     }
+
 
     public static void main(String[] args) throws IOException {
         String nodesFile = "nodes.txt";

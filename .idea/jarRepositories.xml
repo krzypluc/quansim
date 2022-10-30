@@ -17,9 +17,19 @@
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="scijava" />
+      <option name="name" value="SciJava-Public" />
+      <option name="url" value="https://maven.scijava.org/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="apache" />
       <option name="name" value="apache_snapshots" />
       <option name="url" value="http://repository.apache.org/snapshots" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="apache" />
+      <option name="name" value="apache_snapshots" />
+      <option name="url" value="https://repository.apache.org/snapshots" />
     </remote-repository>
   </component>
 </project>

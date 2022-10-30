@@ -29,4 +29,23 @@ public class DFT {
         Complex[] dftTransform = new Complex[values.length];
         return dftTransform;
     }
+
+    public static double[] freq(double x[]){
+        int n = x.length;
+        double d = x[1] - x[0];
+        double[] freq = new double[n];
+
+        int j = 0;
+        for (int i = 0; i < n; i++){
+            if (i < (n / 2)){
+                freq[i] = i;
+            } else{
+                freq[i] = -n / 2 + j;
+                j++;
+            }
+            freq[i] = freq[i] / (d * n);
+        }
+        
+        return freq;
+    }
 }
