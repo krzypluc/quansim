@@ -1,9 +1,0 @@
-Mar 14, 2022 6:19:33 PM org.pcj.internal.InternalPCJ start
-INFO: PCJ version 5.3.0-c529b9c (2021-06-28T10:15:49.880+0200)
-Mar 14, 2022 6:19:33 PM org.pcj.internal.InternalPCJ start
-INFO: Starting compute.RunJob with 16 threads (on 1 node)...
-0.6668107102483608
-1.3234564522644146
-Liczba procesorow: 16 Czas: 46.808760747
-Mar 14, 2022 6:20:20 PM org.pcj.internal.InternalPCJ start
-INFO: Completed compute.RunJob with 16 threads (on 1 node) after 0h 0m 47s 37ms.
