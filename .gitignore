@@ -4,3 +4,5 @@ output.out
 size.txt
 
 hdf5/**
+
+.idea
