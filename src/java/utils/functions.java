@@ -2,13 +2,10 @@ package utils;
 
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.PCJ;
-import scala.collection.Map;
+import org.yaml.snakeyaml.Yaml;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 
 public class functions {
@@ -52,5 +49,12 @@ public class functions {
                 .multiply(dx / 2);
 
         return new Object[]{y, x, integral};
+    }
+    
+    public static Map<String, Object> loadConfigFromYaml(String path) throws IOException {
+        InputStream inputStream = new FileInputStream(new File("config/config.yml"));
+
+        Yaml yaml = new Yaml();
+        return yaml.load(inputStream);
     }
 }

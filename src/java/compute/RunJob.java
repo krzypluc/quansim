@@ -1,21 +1,19 @@
 package compute;
 
 import java.io.*;
-import java.util.*;
+import java.util.Map;
 
-import ch.systemsx.cisd.hdf5.*;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
 import org.pcj.*;
-import utils.DFT;
+import org.yaml.snakeyaml.Yaml;
+import utils.FTUtils;
 
 import static java.lang.Math.PI;
-import static java.lang.Math.log;
 import static utils.functions.initYandX;
-import static utils.functions.waveFunction;
-import static utils.integrator.TrapezoidComplex1D;
+import static utils.functions.loadConfigFromYaml;
 
 // import org.apache.commons.numbers.complex.Complex;
 
@@ -23,26 +21,38 @@ import static utils.integrator.TrapezoidComplex1D;
 @RegisterStorage(RunJob.SharedRunJob.class)
 public class RunJob implements StartPoint {
 
-    static final int RESOLUTION_EXPOTENTIAL = 3;
-    static final int PERIOD_EXPOTENTIAL = 6;
-    public static final int RESOLUTION = (int) Math.pow(2, RESOLUTION_EXPOTENTIAL);
-
-    static final double period = PERIOD_EXPOTENTIAL * PI;
-
     @Storage(RunJob.class)
     public enum SharedRunJob {
         x, y, integral, transformedFromTheNextProcess, transformed
     }
-
-    // One dimensional wave function: x - arguments, y - values
-    private double[] x = new double[RESOLUTION];
-    private Complex[] y = new Complex[RESOLUTION];
+    private double[] x;
+    private Complex[] y;
     private Complex integral = Complex.ZERO;
-    public Complex[] transformedFromTheNextProcess = new Complex[0];
-    Complex[] transformed;
+    private Complex[] transformedFromTheNextProcess;
+    private Complex[] transformed;
 
     @Override
-    public void main() throws Throwable {
+    public void main() throws IOException {
+        // Load config
+        Map<String, Object> config = loadConfigFromYaml("config/config.yml");
+
+        // Set values form config
+        Map<String, Double> time = (Map<String, Double>) config.get("time");
+        Map<String, Integer> domain = (Map<String, Integer>) config.get("domain");
+
+        // Seting values from config
+        int RESOLUTION_EXPOTENTIAL = (int) domain.get("resolutionExpotential");
+        int PERIOD_NUMBER = (int) domain.get("period");
+        int RESOLUTION = (int) Math.pow(2, RESOLUTION_EXPOTENTIAL);
+
+        double period = PERIOD_NUMBER * PI;
+        // One dimensional wave function: x - arguments, y - values
+        x = new double[RESOLUTION];
+        y = new Complex[RESOLUTION];
+        integral = Complex.ZERO;
+        transformedFromTheNextProcess = new Complex[0];
+
+        // Use constants as process id and number of processes
         int procID = PCJ.myId();
         int procCount = PCJ.threadCount();
 
@@ -91,6 +101,7 @@ public class RunJob implements StartPoint {
             PCJ.asyncBroadcast(y, SharedRunJob.y);
         }
         PCJ.waitFor(SharedRunJob.y);
+
         /*
         ------------- FFT LOOP
 
@@ -268,27 +279,30 @@ public class RunJob implements StartPoint {
         FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
 
         Complex[] y_transformed = fft.transform(y, TransformType.FORWARD);
-        double[] freq = DFT.freq(x);
+        double[] freq = FTUtils.freq(x);
 
-        if (procID == 0) {
-            IHDF5Writer writer = HDF5Factory.open("hdf5/myfile.h5");
-            writer.writeDoubleArray("x", x);
-
-            double[][] yTransformedDouble = new double[y.length][2];
-            for (int i = 0; i < y.length; i++){
-                yTransformedDouble[i][0] = y_transformed[i].getReal();
-                yTransformedDouble[i][1] = y_transformed[i].getImaginary();
-            }
-
-            writer.writeDoubleMatrix("y", yTransformedDouble);
-            writer.close();
+        if (procID == 0){
+            System.out.println(time.get("endTime"));
         }
 
+//        if (procID == 0) {
+//            String groupName = LocalDateTime.now().toString();
+//            IHDF5Writer writer = HDF5Factory.open("hdf5/myfile.h5");
+//            writer.writeDoubleArray(groupName + "/x", x);
+//
+//            double[][] yTransformedDouble = new double[y.length][2];
+//            for (int i = 0; i < y.length; i++){
+//                yTransformedDouble[i][0] = y_transformed[i].getReal();
+//                yTransformedDouble[i][1] = y_transformed[i].getImaginary();
+//            }
+//
+//            writer.writeDoubleMatrix(groupName + "/y", yTransformedDouble);
+//            writer.close();
+//        }
     }
 
-
     public static void main(String[] args) throws IOException {
-        String nodesFile = "nodes.txt";
+        String nodesFile = (String) loadConfigFromYaml("config/config.yml").get("nodesFileName");
         PCJ.executionBuilder(RunJob.class)
                 .addNodes(new File(nodesFile))
                 .start();
