@@ -10,6 +10,11 @@ constants:
 
 domain:
   period: 3
-  resolutionExpotential: 6
+  resolutionExpotential: 7
+
+functions:
+  potential: "default"
+  waveFunction: "default"
 
 nodesFileName: "nodes.txt"
+hdf5FilePath: "hdf5/myfile.h5"
