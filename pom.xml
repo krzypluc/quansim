@@ -6,25 +6,12 @@
 
     <groupId>org.example</groupId>
     <artifactId>magisterka</artifactId>
-    <version>0.1-beta</version>
-    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
-    <repositories>
-        <repository>
-            <id>apache</id>
-            <name>apache_snapshots</name>
-            <url>https://repository.apache.org/snapshots</url>
-        </repository>
-        <repository>
-            <id>scijava</id>
-            <name>SciJava-Public</name>
-            <url>https://maven.scijava.org/content/repositories/public/</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
@@ -32,50 +19,6 @@
             <artifactId>pcj</artifactId>
             <version>5.3.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.commons</groupId>-->
-<!--            <artifactId>commons-numbers-complex</artifactId>-->
-<!--            <version>1.0</version>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-            <version>3.6.1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/ch.ethz.sis.jhdf5/jhdf5-native -->
-        <!-- https://mvnrepository.com/artifact/cisd/jhdf5 -->
-        <dependency>
-            <groupId>cisd</groupId>
-            <artifactId>jhdf5</artifactId>
-            <version>19.04.0</version>
-        </dependency>
-
-
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <transformers>
-                                <transformer implementation=
-                                                     "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>compute.RunJob</mainClass>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

@@ -1,6 +1,2 @@
-/target/
 nodes.txt
 output.out
-size.txt
-
-hdf5/**
