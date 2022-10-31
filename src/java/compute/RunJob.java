@@ -81,7 +81,8 @@ public class RunJob implements StartPoint {
             PCJ.asyncBroadcast(coll, SharedRunJob.integral);
         }
 
-        PCJ.waitFor(SharedRunJob.integral);
+        PCJ.waitFor(SharedRunJob.integral, 1);
+
         // Normalize wave function
         for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
 
@@ -102,15 +103,15 @@ public class RunJob implements StartPoint {
             PCJ.asyncBroadcast(y, SharedRunJob.y);
             PCJ.asyncBroadcast(x, SharedRunJob.x);
         }
+
         PCJ.waitFor(SharedRunJob.y);
 
-        Complex[] y_derivative = FFTDerivative.derivativeComplex(y, x);
 
         if (procID == 0) {
-
-            double jk = BesselFunctions.Besselnx(1, 2);
-
-            System.out.println(jk);
+            Complex[] y_derivative = FFTDerivative.derivativeComplex(y, x);
+            for (Complex nr : y){
+                // System.out.println(nr);
+            }
         }
 
     }

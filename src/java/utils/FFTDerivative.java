@@ -31,9 +31,17 @@ public class FFTDerivative {
             y_transformed[i] = y_transformed[i]
                     .multiply(Complex.I.multiply(fk[i] * 2 * Math.PI).pow(2));
 
+            if (y_transformed[i].isNaN()) {
+                y_transformed[i] = Complex.ZERO;
+            }
         }
 
-        Complex[] y_derr = fft.transform(y_transformed, TransformType.INVERSE);
+        Complex[] y_derr = new Complex[y.length];
+        y_derr = fft.transform(y_transformed, TransformType.INVERSE);
+
+        for (Complex nr : y_derr){
+            System.out.println(nr);
+        }
         return y_derr;
     }
 }
