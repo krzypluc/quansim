@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class functions {
+public class Functions {
     public static Complex waveFunction(Complex x) {
         // valueOfExpotential = -1 * x^2
         Complex valueOfExpontetial = x.multiply(x).multiply(-1);

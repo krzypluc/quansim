@@ -6,15 +6,14 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
-import org.apache.commons.math3.transform.TransformType;
 import org.pcj.*;
-import org.yaml.snakeyaml.Yaml;
+import utils.BesselFunctions;
 import utils.FFTDerivative;
-import utils.FTUtils;
+import utils.Integrator;
 
 import static java.lang.Math.PI;
-import static utils.functions.initYandX;
-import static utils.functions.loadConfigFromYaml;
+import static utils.Functions.initYandX;
+import static utils.Functions.loadConfigFromYaml;
 
 // import org.apache.commons.numbers.complex.Complex;
 
@@ -26,17 +25,17 @@ public class RunJob implements StartPoint {
     public enum SharedRunJob {
         x, y, integral, transformedFromTheNextProcess, transformed
     }
+
     private double[] x;
     private Complex[] y;
     private Complex integral = Complex.ZERO;
     private Complex[] transformedFromTheNextProcess;
     private Complex[] transformed;
 
+    private static Map<String, Object> config;
+
     @Override
     public void main() throws IOException {
-        // Load config
-        Map<String, Object> config = loadConfigFromYaml("config/config.yml");
-
         // Set values form config
         Map<String, Double> time = (Map<String, Double>) config.get("time");
         Map<String, Integer> domain = (Map<String, Integer>) config.get("domain");
@@ -69,8 +68,9 @@ public class RunJob implements StartPoint {
         // Casting, because initVal returns objects, not certain types.
         y = (Complex[]) initVal[0];
         x = (double[]) initVal[1];
-        integral = (Complex) initVal[2];
-
+        integral = (Complex) Integrator.TrapezoidComplex1D(y, x, dx);
+        
+        // ---------------- PARALLEL INTEGRAL
         // Collect integral and share to processes final value.
         if (procID == 0) {
             Complex coll = PCJ.reduce(
@@ -78,17 +78,19 @@ public class RunJob implements StartPoint {
                     (subtotal, element) -> subtotal.add(element),
                     SharedRunJob.integral);
             // Broadcast to all processes
-            PCJ.broadcast(coll, SharedRunJob.integral);
+            PCJ.asyncBroadcast(coll, SharedRunJob.integral);
         }
+
+        PCJ.waitFor(SharedRunJob.integral);
 
         // Normalize wave function
         for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
+
             y[i] = y[i].divide(integral);
         }
 
         // Collect all calculations
         if (procID == 0) {
-
             int procIncr = 1;
             for (int i = lengthOfpiece; i < y.length; i++) {
                 x[i] = PCJ.get(procIncr, SharedRunJob.x, i);
@@ -98,25 +100,25 @@ public class RunJob implements StartPoint {
                     procIncr++;
                 }
             }
-            PCJ.asyncBroadcast(x, SharedRunJob.x);
             PCJ.asyncBroadcast(y, SharedRunJob.y);
+            PCJ.asyncBroadcast(x, SharedRunJob.x);
         }
         PCJ.waitFor(SharedRunJob.y);
-        
-
-        FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
 
         Complex[] y_derivative = FFTDerivative.derivativeComplex(y, x);
 
-        if (procID == 0){
-            System.out.println(y.length);
-        }
+        if (procID == 0) {
+            BesselFunctions bessel = new BesselFunctions();
+            double jk = bessel.Besselnx(7, 232.2);
 
+            System.out.println(jk);
+        }
 
     }
 
     public static void main(String[] args) throws IOException {
-        String nodesFile = (String) loadConfigFromYaml("config/config.yml").get("nodesFileName");
+        config = loadConfigFromYaml("config/config.yml");
+        String nodesFile = (String) config.get("nodesFileName");
         PCJ.executionBuilder(RunJob.class)
                 .addNodes(new File(nodesFile))
                 .start();

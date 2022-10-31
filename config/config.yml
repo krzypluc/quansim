@@ -7,10 +7,11 @@ constants:
   planckConstant: 1
   mass: 1
   alfa: 1.2
+  besselResolutionExpotential: 10
 
 domain:
   period: 3
-  resolutionExpotential: 7
+  resolutionExpotential: 12
 
 functions:
   potential: "default"

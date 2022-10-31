@@ -1,6 +1,6 @@
 package utils;
 
-public class parallelFFT2 {
+public class ParallelFFT2 {
     /*
         ------------- FFT LOOP
 
