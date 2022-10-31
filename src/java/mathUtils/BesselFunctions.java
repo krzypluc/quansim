@@ -1,4 +1,4 @@
-package utils;
+package mathUtils;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;

@@ -1,21 +1,18 @@
 package compute;
 
 import java.io.*;
+import java.time.LocalDateTime;
 import java.util.Map;
 
+import ch.systemsx.cisd.hdf5.HDF5Factory;
+import ch.systemsx.cisd.hdf5.IHDF5Writer;
 import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.transform.DftNormalization;
-import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.pcj.*;
-import utils.BesselFunctions;
-import utils.FFTDerivative;
-import utils.Integrator;
+import mathUtils.FFTDerivative;
 
 import static java.lang.Math.PI;
-import static utils.Functions.initYandX;
-import static utils.Functions.loadConfigFromYaml;
-
-// import org.apache.commons.numbers.complex.Complex;
+import static mathUtils.Functions.initYandX;
+import static mathUtils.Functions.loadConfigFromYaml;
 
 
 @RegisterStorage(RunJob.SharedRunJob.class)
@@ -46,6 +43,7 @@ public class RunJob implements StartPoint {
         int RESOLUTION = (int) Math.pow(2, RESOLUTION_EXPOTENTIAL);
 
         double period = PERIOD_NUMBER * PI;
+
         // One dimensional wave function: x - arguments, y - values
         x = new double[RESOLUTION];
         y = new Complex[RESOLUTION];
@@ -69,7 +67,7 @@ public class RunJob implements StartPoint {
         y = (Complex[]) initVal[0];
         x = (double[]) initVal[1];
         integral = (Complex) initVal[2];
-        
+
         // ---------------- PARALLEL INTEGRAL
         // Collect integral and share to processes final value.
         if (procID == 0) {
@@ -106,14 +104,28 @@ public class RunJob implements StartPoint {
 
         PCJ.waitFor(SharedRunJob.y);
 
-
         if (procID == 0) {
             Complex[] y_derivative = FFTDerivative.derivativeComplex(y, x);
-            for (Complex nr : y){
-                // System.out.println(nr);
-            }
-        }
 
+            for (Complex nr : y_derivative) {
+                System.out.println(nr);
+            }
+
+            String groupName = LocalDateTime.now().toString();
+            String hdf5FileName = (String) config.get("hdf5FilePath");
+
+            IHDF5Writer writer = HDF5Factory.open(hdf5FileName);
+            writer.writeDoubleArray(groupName + "/x", x);
+
+            double[][] yTransformedDouble = new double[y.length][2];
+            for (int i = 0; i < y.length; i++) {
+                yTransformedDouble[i][0] = y_derivative[i].getReal();
+                yTransformedDouble[i][1] = y_derivative[i].getImaginary();
+            }
+
+            writer.writeDoubleMatrix(groupName + "/y_double_derr", yTransformedDouble);
+            writer.close();
+        }
     }
 
     public static void main(String[] args) throws IOException {

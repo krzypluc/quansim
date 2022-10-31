@@ -1,4 +1,4 @@
-package utils;
+package mathUtils;
 
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
@@ -39,9 +39,10 @@ public class FFTDerivative {
         Complex[] y_derr = new Complex[y.length];
         y_derr = fft.transform(y_transformed, TransformType.INVERSE);
 
-        for (Complex nr : y_derr){
+        for (Complex nr : y_derr) {
             System.out.println(nr);
         }
+
         return y_derr;
     }
 }

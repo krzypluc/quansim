@@ -1,4 +1,4 @@
-package utils;
+package mathUtils;
 
 public class HDF5Sinpets {
     //        if (procID == 0) {
