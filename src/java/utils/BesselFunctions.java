@@ -11,7 +11,7 @@ public class BesselFunctions {
         double endOfIntegral = Math.PI;
         double multiplier = 1 / Math.PI;
 
-        DoubleBesselFunction bessFunction = new DoubleBesselFunction(n, x);
+        IntegralBesselFunction bessFunction = new IntegralBesselFunction(n, x);
 
         SimpsonIntegrator integrator = new SimpsonIntegrator();
         double integral = integrator.integrate(maxEval, bessFunction, startOfIntegral, endOfIntegral);
@@ -22,11 +22,11 @@ public class BesselFunctions {
     }
 }
 
-class DoubleBesselFunction implements UnivariateFunction {
+class IntegralBesselFunction implements UnivariateFunction {
     private int n;
     private double x;
 
-    public DoubleBesselFunction(int n, double x) {
+    public IntegralBesselFunction(int n, double x) {
         this.n = n;
         this.x = x;
     }

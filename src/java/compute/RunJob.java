@@ -82,7 +82,6 @@ public class RunJob implements StartPoint {
         }
 
         PCJ.waitFor(SharedRunJob.integral);
-
         // Normalize wave function
         for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
 
