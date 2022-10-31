@@ -1,56 +1,37 @@
 package utils;
 
-import org.apache.commons.math3.complex.Complex;
-import scala.Int;
-
-import java.io.IOException;
-import java.util.Map;
-
-import static utils.Functions.loadConfigFromYaml;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
 
 public class BesselFunctions {
-    private Map<String, Object> config;
-    private Map<String, Integer> constants;
+    private static final int maxEval = (int) Math.pow(2, 6);
 
-    public BesselFunctions() throws IOException {
-        config = loadConfigFromYaml("config/config.yml");
-        constants = (Map<String, Integer>) config.get("constants");
-    }
-
-    public double Besselnx(int n, double x) {
+    public static double Besselnx(int n, double x) {
         double startOfIntegral = 0.0;
         double endOfIntegral = Math.PI;
         double multiplier = 1 / Math.PI;
 
-        double firstValue = 0;
-        double lastValue = 0;
+        DoubleBesselFunction bessFunction = new DoubleBesselFunction(n, x);
 
-        int resExp = (int) constants.get("besselResolutionExpotential");
-        int resolution = (int) Math.pow(2, resExp);
-        double[] y = new double[resolution + 1];
+        SimpsonIntegrator integrator = new SimpsonIntegrator();
+        double integral = integrator.integrate(maxEval, bessFunction, startOfIntegral, endOfIntegral);
 
-        double sum = 0;
-        double dtau = (endOfIntegral - startOfIntegral) / resolution;
-        double tau = startOfIntegral;
-
-        for (int i = 0; i <= resolution; i++) {
-            y[i] = Math.cos(n * tau - x * Math.sin(tau));
-            sum += y[i];
-            tau += dtau;
-
-            // Saving first value - use in integral
-            if (i == 0) {
-                firstValue = y[i];
-            }
-
-            // Saving last value - use in integral
-            if (i == (resolution - 1)) {
-                lastValue = y[i];
-            }
-        }
-        double integral = ((sum * 2) - lastValue - firstValue) * (dtau / 2);
         integral = integral * multiplier;
 
         return integral;
+    }
+}
+
+class DoubleBesselFunction implements UnivariateFunction {
+    private int n;
+    private double x;
+
+    public DoubleBesselFunction(int n, double x) {
+        this.n = n;
+        this.x = x;
+    }
+
+    public double value(double tau){
+        return Math.cos(n * tau - x * Math.sin(tau));
     }
 }

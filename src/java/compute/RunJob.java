@@ -68,7 +68,7 @@ public class RunJob implements StartPoint {
         // Casting, because initVal returns objects, not certain types.
         y = (Complex[]) initVal[0];
         x = (double[]) initVal[1];
-        integral = (Complex) Integrator.TrapezoidComplex1D(y, x, dx);
+        integral = (Complex) initVal[2];
         
         // ---------------- PARALLEL INTEGRAL
         // Collect integral and share to processes final value.
@@ -108,8 +108,8 @@ public class RunJob implements StartPoint {
         Complex[] y_derivative = FFTDerivative.derivativeComplex(y, x);
 
         if (procID == 0) {
-            BesselFunctions bessel = new BesselFunctions();
-            double jk = bessel.Besselnx(7, 232.2);
+
+            double jk = BesselFunctions.Besselnx(1, 2);
 
             System.out.println(jk);
         }
