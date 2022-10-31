@@ -18,8 +18,7 @@ def ComplexTwoPlots(x, y1, y2, title1, title2, title="", fname="", xmin=None, xm
     ax[1].plot(x, y2.real, x, y2.imag)
     ax[1].title.set_text(title2)
     ax[1].set(xlim=(xmin, xmax), ylim=(ymin, ymax))
-    plt.savefig(fname, dpi=80)
-    plt.close()
+    plt.show()
 
 def ComplexThreePlots(x, y1, y2, y3, title1, title2, title3, xmin=None, xmax=None, ymin=None, ymax=None):
     fig, ax = plt.subplots(1, 3)

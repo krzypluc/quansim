@@ -20,9 +20,10 @@ if __name__=="__main__":
         calculationFolders = sorted(calculationFolders, key=int, reverse=True)
         datasetName = calculationFolders[0]
 
-        dataset = h5File[datasetName + "/y_double_derr"][:]
+        y_derr = h5File[datasetName + "/y_double_derr"][:]
+        y = h5File[datasetName + "/y"][:]
         x = h5File[datasetName + "/x"][:]
 
-    y = np.array([complex(x, y) for x, y in dataset])
+    y_derr = np.array([complex(x, y) for x, y in y_derr])
 
-    diagrams.ComplexPlot(x, y)
+    diagrams.ComplexTwoPlots(x, y, y_derr, "Wave function", "Derivative of WF")

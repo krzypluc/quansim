@@ -105,6 +105,7 @@ public class RunJob implements StartPoint {
 
         PCJ.waitFor(SharedRunJob.y);
 
+        // Saving tp HDF5
         if (procID == 0) {
             Complex[] y_derivative = FFTDerivative.derivativeComplex(y, x);
 
@@ -124,7 +125,15 @@ public class RunJob implements StartPoint {
                 yTransformedDouble[i][1] = y_derivative[i].getImaginary();
             }
 
+            double[][] yDouble = new double[y.length][2];
+            for (int i = 0; i < y.length; i++) {
+                yDouble[i][0] = y[i].getReal();
+                yDouble[i][1] = y[i].getImaginary();
+            }
+
             writer.writeDoubleMatrix(groupName + "/y_double_derr", yTransformedDouble);
+            writer.writeDoubleMatrix(groupName + "/y", yDouble);
+
             writer.close();
         }
     }
