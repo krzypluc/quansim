@@ -6,6 +6,7 @@ import java.util.Map;
 
 import ch.systemsx.cisd.hdf5.HDF5Factory;
 import ch.systemsx.cisd.hdf5.IHDF5Writer;
+import miscellaneous.GroupName;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.*;
 import mathUtils.FFTDerivative;
@@ -111,7 +112,7 @@ public class RunJob implements StartPoint {
                 System.out.println(nr);
             }
 
-            String groupName = LocalDateTime.now().toString();
+            String groupName = GroupName.getGroupName();
             String hdf5FileName = (String) config.get("hdf5FilePath");
 
             IHDF5Writer writer = HDF5Factory.open(hdf5FileName);

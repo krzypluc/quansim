@@ -19,3 +19,5 @@ functions:
 
 nodesFileName: "nodes.txt"
 hdf5FilePath: "hdf5/myfile.h5"
+# File path to HDF5 file relative to the python folder
+hdf5PythonFolderFilePath: "../hdf5/myfile.h5"
