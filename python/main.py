@@ -3,7 +3,7 @@ import numpy as np
 import yaml
 from yaml.loader import SafeLoader
 
-import diagrams
+from utils import diagrams
 
 if __name__=="__main__":
 
