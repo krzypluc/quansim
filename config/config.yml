@@ -1,3 +1,5 @@
+---
+
 time:
   startTime: 0
   endTime: 1
@@ -17,7 +19,7 @@ functions:
   potential: "default"
   waveFunction: "default"
 
-nodesFileName: "nodes.txt"
-hdf5FilePath: "hdf5/myfile.h5"
-# File path to HDF5 file relative to the python folder
-hdf5PythonFolderFilePath: "../hdf5/myfile.h5"
+filePaths:
+  nodesFile: "nodes.txt"
+  hdf5JavaFile: "hdf5/quancalculations.h5"
+  hdf5PythonFile: "../hdf5/quancalculations.h5"

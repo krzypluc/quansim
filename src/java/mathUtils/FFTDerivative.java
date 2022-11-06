@@ -39,10 +39,6 @@ public class FFTDerivative {
         Complex[] y_derr = new Complex[y.length];
         y_derr = fft.transform(y_transformed, TransformType.INVERSE);
 
-        for (Complex nr : y_derr) {
-            System.out.println(nr);
-        }
-
         return y_derr;
     }
 }

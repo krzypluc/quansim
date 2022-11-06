@@ -5,13 +5,12 @@ from yaml.loader import SafeLoader
 
 from utils import diagrams
 
-if __name__=="__main__":
-
+if __name__ == "__main__":
     # Load config
     with open("../config/config.yml") as yamlFile:
         data = yaml.load(yamlFile, Loader=SafeLoader)
 
-    h5FilePath = data.get("hdf5PythonFolderFilePath")
+    h5FilePath = data["filePaths"]["hdf5PythonFile"]
 
     with h5py.File(h5FilePath, 'r') as h5File:
         calculationFolders = list(h5File.keys())

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import ch.systemsx.cisd.hdf5.HDF5Factory;
 import ch.systemsx.cisd.hdf5.IHDF5Writer;
+import mathUtils.chebyshev.Misc;
 import miscellaneous.GroupName;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.*;
@@ -31,17 +32,19 @@ public class RunJob implements StartPoint {
     private Complex[] transformed;
 
     private static Map<String, Object> config;
+    private static Map<String, String> filePaths;
+    private static Map<String, Integer> domain;
+    private static Map<String, Double> constants;
+    private static Map<String, Double> time;
 
     @Override
     public void main() throws IOException {
-        // Set values form config
-        Map<String, Double> time = (Map<String, Double>) config.get("time");
-        Map<String, Integer> domain = (Map<String, Integer>) config.get("domain");
-
         // Seting values from config
         int RESOLUTION_EXPOTENTIAL = (int) domain.get("resolutionExpotential");
         int PERIOD_NUMBER = (int) domain.get("period");
         int RESOLUTION = (int) Math.pow(2, RESOLUTION_EXPOTENTIAL);
+
+        double dt = (double) time.get("dt");
 
         double period = PERIOD_NUMBER * PI;
 
@@ -105,16 +108,15 @@ public class RunJob implements StartPoint {
 
         PCJ.waitFor(SharedRunJob.y);
 
+        Complex[] y_derivative = FFTDerivative.derivativeComplex(y, x);
+
         // Saving tp HDF5
         if (procID == 0) {
-            Complex[] y_derivative = FFTDerivative.derivativeComplex(y, x);
 
-            for (Complex nr : y_derivative) {
-                System.out.println(nr);
-            }
+            System.out.println(Misc.getR(dt, potential, mass));
 
             String groupName = GroupName.getGroupName();
-            String hdf5FileName = (String) config.get("hdf5FilePath");
+            String hdf5FileName = (String) filePaths.get("hdf5JavaFile");
 
             IHDF5Writer writer = HDF5Factory.open(hdf5FileName);
             writer.writeDoubleArray(groupName + "/x", x);
@@ -140,7 +142,12 @@ public class RunJob implements StartPoint {
 
     public static void main(String[] args) throws IOException {
         config = loadConfigFromYaml("config/config.yml");
-        String nodesFile = (String) config.get("nodesFileName");
+        filePaths = (Map<String, String>) config.get("filePaths");
+        domain = (Map<String, Integer>) config.get("domain");
+        constants = (Map<String, Double>) config.get("constants");
+        time = (Map<String, Double>) config.get("time");
+
+        String nodesFile = filePaths.get("nodesFile");
         PCJ.executionBuilder(RunJob.class)
                 .addNodes(new File(nodesFile))
                 .start();

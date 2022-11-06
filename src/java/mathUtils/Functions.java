@@ -17,6 +17,10 @@ public class Functions {
         return valueOfExpontetial.exp();
     }
 
+    public static Complex potential(Complex x){
+
+    }
+
     public static Object[] initYandX(Complex[] y, double[] x, double period, double dx) {
         Complex sumOfValues = Complex.ZERO;
         Complex firstValue = Complex.ZERO;
