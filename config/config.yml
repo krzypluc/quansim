@@ -1,0 +1,25 @@
+---
+
+time:
+  startTime: 0
+  endTime: 1
+  dt: 0.001
+
+constants:
+  planckConstant: 1.0
+  mass: 1.0
+  alfa: 1.2
+  besselResolutionExpotential: 10
+
+domain:
+  period: 3
+  resolutionExpotential: 8
+
+functions:
+  potential: "default"
+  waveFunction: "default"
+
+filePaths:
+  nodesFile: "nodes.txt"
+  hdf5JavaFile: "hdf5/quancalculations.h5"
+  hdf5PythonFile: "../hdf5/quancalculations.h5"

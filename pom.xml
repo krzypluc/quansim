@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>magisterka</artifactId>
+    <artifactId>accquansim</artifactId>
     <version>0.1-beta</version>
     <packaging>jar</packaging>
 
@@ -49,6 +49,13 @@
             <artifactId>jhdf5</artifactId>
             <version>19.04.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.33</version>
+        </dependency>
+
 
 
     </dependencies>

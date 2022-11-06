@@ -3,6 +3,6 @@ nodes.txt
 output.out
 size.txt
 
-hdf5/**
+hdf5/*
 
 .idea
