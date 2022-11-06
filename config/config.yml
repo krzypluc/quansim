@@ -6,14 +6,14 @@ time:
   dt: 0.001
 
 constants:
-  planckConstant: 1
-  mass: 1
+  planckConstant: 1.0
+  mass: 1.0
   alfa: 1.2
   besselResolutionExpotential: 10
 
 domain:
   period: 3
-  resolutionExpotential: 12
+  resolutionExpotential: 8
 
 functions:
   potential: "default"

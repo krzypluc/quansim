@@ -17,11 +17,14 @@ public class Functions {
         return valueOfExpontetial.exp();
     }
 
-    public static Complex potential(Complex x){
-
+    public static double potential(double x){
+        // returns (x^2) / 2
+        return Math.pow(x, 2) / 2;
     }
 
-    public static Object[] initYandX(Complex[] y, double[] x, double period, double dx) {
+    public static HashMap<String, Object> initYandX(Complex[] y, double[] x, double period, double dx) {
+        HashMap<String, Object> ret = new HashMap<String, Object>();
+
         Complex sumOfValues = Complex.ZERO;
         Complex firstValue = Complex.ZERO;
         Complex lastValue = Complex.ZERO;
@@ -29,11 +32,13 @@ public class Functions {
         int procID = PCJ.myId();
         int procCount = PCJ.threadCount();
         int lengthOfpiece = (int) y.length / procCount;
+        double[] potential = new double[x.length];
 
         for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
             x[i] = (-period / 2) + dx * i;
             y[i] = waveFunction(Complex.valueOf(x[i], 0.0));
             sumOfValues = sumOfValues.add(y[i]);
+            potential[i] = potential(x[i]);
 
             // Saving first value - use in integral
             if (i == procID * lengthOfpiece) {
@@ -52,7 +57,11 @@ public class Functions {
                 .subtract(firstValue)
                 .multiply(dx / 2);
 
-        return new Object[]{y, x, integral};
+        ret.put("x", x);
+        ret.put("y", y);
+        ret.put("integral", integral);
+        ret.put("potential", potential);
+        return ret;
     }
     
     public static Map<String, Object> loadConfigFromYaml(String path) throws IOException {

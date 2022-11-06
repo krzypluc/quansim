@@ -4,7 +4,7 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
 
 public class BesselFunctions {
-    private static final int maxEval = (int) Math.pow(2, 6);
+    private static final int maxEval = (int) Math.pow(2, 16);
 
     public static double Besselnx(int n, double x) {
         double startOfIntegral = 0.0;
@@ -23,8 +23,8 @@ public class BesselFunctions {
 }
 
 class IntegralBesselFunction implements UnivariateFunction {
-    private int n;
-    private double x;
+    private final int n;
+    private final double x;
 
     public IntegralBesselFunction(int n, double x) {
         this.n = n;
