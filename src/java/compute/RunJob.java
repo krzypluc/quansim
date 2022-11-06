@@ -158,17 +158,17 @@ public class RunJob implements StartPoint {
             // Denominator
             chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].divide(y[i].multiply(deltaE));
 
-            // Multiply by 2 * ak
-            chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].multiply(2).multiply(a1);
+            // Multiply by 2
+            chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].multiply(2);
         }
 
         Complex[] yDer;
-        Complex[] cheb2;
-        Complex[] cheb1;
+        Complex[] chebPrevPrev;
+        Complex[] chebPrev;
         for (int i = 2; i < N; i++) {
             yDer = FFTDerivative.derivativeComplex(chebyshevPolynomials[i - 1], x);
-            cheb2 = chebyshevPolynomials[i - 2];
-            cheb1 = chebyshevPolynomials[i - 1];
+            chebPrevPrev = chebyshevPolynomials[i - 2];
+            chebPrev = chebyshevPolynomials[i - 1];
 
             for (int j = 0; j < chebyshevPolynomials[i].length; j++) {
                 // --- Calculate (-2i) * Hnorm * cheb[i-1]
@@ -176,22 +176,25 @@ public class RunJob implements StartPoint {
                 momentum = yDer[i].multiply(momentumConst);
 
                 // potential * phi
-                potentialChebPart = cheb1[j].multiply(potential[i]);
+                potentialChebPart = chebPrev[j].multiply(potential[i]);
 
                 // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
-                normalizationPart = cheb1[j].multiply((deltaE / 2) + Vmin);
+                normalizationPart = chebPrev[j].multiply((deltaE / 2) + Vmin);
 
                 // Numerator -
                 chebyshevPolynomials[i][j] = momentum.add(potentialChebPart).add(normalizationPart);
 
                 // Denominator
-                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].divide(cheb1[j].multiply(deltaE));
+                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].divide(chebPrev[j].multiply(deltaE));
+
+                // Multiply by 2
+                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].multiply(2);
 
                 // Multiply by -2i
                 chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].multiply(Complex.I).multiply(-2);
 
                 // --- Add cheb[i - 2]
-                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j] + cheb2[j];
+                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].add(chebPrevPrev[j]);
             }
         }
 
