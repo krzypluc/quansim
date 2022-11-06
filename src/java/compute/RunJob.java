@@ -132,8 +132,8 @@ public class RunJob implements StartPoint {
         Complex[][] chebyshevPolynomials = new Complex[N][x.length];
 
         // k = n + 1
-        Complex a0 = Misc.getAk(1, R, G);
-        Complex a1 = Misc.getAk(2, R, G);
+        Complex a0 = Misc.getAk(0, deltaE, Vmin, dt);
+        Complex a1 = Misc.getAk(1, deltaE, Vmin, dt);
 
         Complex[] ySecondDerivative = FFTDerivative.derivativeComplex(y, x);
         Complex momentum;
@@ -160,6 +160,39 @@ public class RunJob implements StartPoint {
 
             // Multiply by 2 * ak
             chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].multiply(2).multiply(a1);
+        }
+
+        Complex[] yDer;
+        Complex[] cheb2;
+        Complex[] cheb1;
+        for (int i = 2; i < N; i++) {
+            yDer = FFTDerivative.derivativeComplex(chebyshevPolynomials[i - 1], x);
+            cheb2 = chebyshevPolynomials[i - 2];
+            cheb1 = chebyshevPolynomials[i - 1];
+
+            for (int j = 0; j < chebyshevPolynomials[i].length; j++) {
+                // --- Calculate (-2i) * Hnorm * cheb[i-1]
+                // Momentum - (-h^2/2m) * y'')
+                momentum = yDer[i].multiply(momentumConst);
+
+                // potential * phi
+                potentialChebPart = cheb1[j].multiply(potential[i]);
+
+                // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
+                normalizationPart = cheb1[j].multiply((deltaE / 2) + Vmin);
+
+                // Numerator -
+                chebyshevPolynomials[i][j] = momentum.add(potentialChebPart).add(normalizationPart);
+
+                // Denominator
+                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].divide(cheb1[j].multiply(deltaE));
+
+                // Multiply by -2i
+                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].multiply(Complex.I).multiply(-2);
+
+                // --- Add cheb[i - 2]
+                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j] + cheb2[j];
+            }
         }
 
         // Saving to HDF5
