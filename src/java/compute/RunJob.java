@@ -46,6 +46,8 @@ public class RunJob implements StartPoint {
 
         // Time
         double dt = (double) time.get("dt");
+        double startTime = (double) time.get("startTime");
+        double endTime = (double) time.get("endTime");
 
         // Constants
         double mass = (double) constants.get("mass");
@@ -124,6 +126,7 @@ public class RunJob implements StartPoint {
         double deltaE = RandG[3];
 
         int N = (int) (R * alfa);
+        int timesteps = (int) ((endTime - startTime) / dt) + 1;
 
         // Hamiltonian
         double momentumConst = (-1) * Math.pow(planckConstant, 2) / (2 * mass);
@@ -131,70 +134,110 @@ public class RunJob implements StartPoint {
         // Polynomial 0, and 1 - or n-2 and n-1
         Complex[][] chebyshevPolynomials = new Complex[N][x.length];
 
+        // Matrix containing history of timesteps
+        Complex[][] yHistory = new Complex[timesteps][y.length];
+        yHistory[0] = y;
+
         // k = n + 1
         Complex a0 = Misc.getAk(0, deltaE, Vmin, dt);
         Complex a1 = Misc.getAk(1, deltaE, Vmin, dt);
 
-        Complex[] ySecondDerivative = FFTDerivative.derivativeComplex(y, x);
+        Complex[] ySecondDerivative = new Complex[y.length];
         Complex momentum;
         Complex potentialChebPart;
         Complex normalizationPart;
-        for (int i = 0; i < chebyshevPolynomials[0].length; i++) {
-            // 1 * y * a0
-            chebyshevPolynomials[0][i] = y[i].multiply(a0);
-
-            // Momentum - (-h^2/2m) * y'')
-            momentum = ySecondDerivative[i].multiply(momentumConst);
-
-            // potential * phi
-            potentialChebPart = y[i].multiply(potential[i]);
-
-            // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
-            normalizationPart = y[i].multiply((deltaE / 2) + Vmin);
-
-            // Numerator -
-            chebyshevPolynomials[1][i] = momentum.add(potentialChebPart).add(normalizationPart);
-
-            // Denominator
-            chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].divide(y[i].multiply(deltaE));
-
-            // Multiply by 2
-            chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].multiply(2);
-        }
 
         Complex[] yDer;
         Complex[] chebPrevPrev;
         Complex[] chebPrev;
-        for (int i = 2; i < N; i++) {
-            yDer = FFTDerivative.derivativeComplex(chebyshevPolynomials[i - 1], x);
-            chebPrevPrev = chebyshevPolynomials[i - 2];
-            chebPrev = chebyshevPolynomials[i - 1];
+        Complex ak;
+        Complex[] sumOfChebPolynomials = new Complex[y.length];
 
-            for (int j = 0; j < chebyshevPolynomials[i].length; j++) {
-                // --- Calculate (-2i) * Hnorm * cheb[i-1]
+        // Interating over timesteps
+        // timesteps - 1: because in every cicle we're calculating wave function for the next step.
+        for (int h = 0; h < (timesteps - 1); h++) {
+
+            ySecondDerivative = FFTDerivative.derivativeComplex(yHistory[h], x);
+            y = yHistory[h];
+
+            for (int i = 0; i < sumOfChebPolynomials.length; i++) {
+                sumOfChebPolynomials[i] = Complex.ZERO;
+            }
+
+            for (int i = 0; i < chebyshevPolynomials[0].length; i++) {
+                // 1 * y * a0
+                chebyshevPolynomials[0][i] = y[i].multiply(a0);
+
+                // Add to the sum
+                sumOfChebPolynomials[i] = sumOfChebPolynomials[i].add(chebyshevPolynomials[0][i]);
+
                 // Momentum - (-h^2/2m) * y'')
-                momentum = yDer[i].multiply(momentumConst);
+                momentum = ySecondDerivative[i].multiply(momentumConst);
 
                 // potential * phi
-                potentialChebPart = chebPrev[j].multiply(potential[i]);
+                potentialChebPart = y[i].multiply(potential[i]);
 
                 // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
-                normalizationPart = chebPrev[j].multiply((deltaE / 2) + Vmin);
+                normalizationPart = y[i].multiply((deltaE / 2) + Vmin);
 
                 // Numerator -
-                chebyshevPolynomials[i][j] = momentum.add(potentialChebPart).add(normalizationPart);
+                chebyshevPolynomials[1][i] = momentum.add(potentialChebPart).add(normalizationPart);
 
                 // Denominator
-                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].divide(chebPrev[j].multiply(deltaE));
+                chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].divide(y[i].multiply(deltaE));
 
                 // Multiply by 2
-                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].multiply(2);
+                chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].multiply(2);
 
-                // Multiply by -2i
-                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].multiply(Complex.I).multiply(-2);
+                // Multiply by a1
+                chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].multiply(a1);
 
-                // --- Add cheb[i - 2]
-                chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].add(chebPrevPrev[j]);
+                // Add to the sum
+                sumOfChebPolynomials[i] = sumOfChebPolynomials[i].add(chebyshevPolynomials[1][i]);
+            }
+
+            for (int i = 2; i < N; i++) {
+                yDer = FFTDerivative.derivativeComplex(chebyshevPolynomials[i - 1], x);
+                chebPrevPrev = chebyshevPolynomials[i - 2];
+                chebPrev = chebyshevPolynomials[i - 1];
+                ak = Misc.getAk(i, deltaE, Vmin, dt);
+
+                for (int j = 0; j < chebyshevPolynomials[i].length; j++) {
+                    // --- Calculate (-2i) * Hnorm * cheb[i-1]
+                    // Momentum - (-h^2/2m) * y'')
+                    momentum = yDer[j].multiply(momentumConst);
+
+                    // potential * phi
+                    potentialChebPart = chebPrev[j].multiply(potential[j]);
+
+                    // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
+                    normalizationPart = chebPrev[j].multiply((deltaE / 2) + Vmin);
+
+                    // Numerator -
+                    chebyshevPolynomials[i][j] = momentum.add(potentialChebPart).add(normalizationPart);
+
+                    // Denominator
+                    chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].divide(chebPrev[j].multiply(deltaE));
+
+                    // Multiply by 2
+                    chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].multiply(2);
+
+                    // Multiply by -2i
+                    chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].multiply(Complex.I).multiply(-2);
+
+                    // --- Add cheb[i - 2]
+                    chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].add(chebPrevPrev[j]);
+
+                    // Multiply by ak
+                    chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].multiply(ak);
+
+                    // Add polynomial
+                    sumOfChebPolynomials[j] = sumOfChebPolynomials[j].add(chebyshevPolynomials[i][j]);
+                }
+            }
+
+            for (int i = 0; i < y.length; i++) {
+                yHistory[h + 1][i] = yHistory[h][i].add(sumOfChebPolynomials[i]);
             }
         }
 
@@ -206,10 +249,12 @@ public class RunJob implements StartPoint {
             IHDF5Writer writer = HDF5Factory.open(hdf5FileName);
             writer.writeDoubleArray(groupName + "/x", x);
 
-            double[][] yTransformedDouble = new double[y.length][2];
-            for (int i = 0; i < y.length; i++) {
-                yTransformedDouble[i][0] = ySecondDerivative[i].getReal();
-                yTransformedDouble[i][1] = ySecondDerivative[i].getImaginary();
+            double[][][] yTransformedDouble = new double[timesteps][y.length][2];
+            for (int i = 0; i < timesteps; i++) {
+                for (int j = 0; j < y.length; j++){
+                    yTransformedDouble[i][j][0] = yHistory[i][j].getReal();
+                    yTransformedDouble[i][j][1] = yHistory[i][j].getImaginary();
+                }
             }
 
             double[][] yDouble = new double[y.length][2];
@@ -218,8 +263,9 @@ public class RunJob implements StartPoint {
                 yDouble[i][1] = y[i].getImaginary();
             }
 
-            writer.writeDoubleMatrix(groupName + "/y_double_derr", yTransformedDouble);
-            writer.writeDoubleMatrix(groupName + "/y", yDouble);
+            for (int i = 0; i < timesteps; i++) {
+                writer.writeDoubleMatrix(groupName + "/" + i, yTransformedDouble[i]);
+            }
 
             writer.close();
         }

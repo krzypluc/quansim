@@ -1,11 +1,7 @@
 import matplotlib.pyplot as plt
 
 def ComplexPlot(x, y):
-    fig, ax = plt.subplots(1, 2)
-    ax[0].plot(x, y.real)
-    ax[0].title.set_text("Real")
-    ax[1].plot(x, y.imag)
-    ax[1].title.set_text("Imag")
+    plt.plot(x, y.real, x, y.imag)
     plt.show()
 
 def ComplexTwoPlots(x, y1, y2, title1, title2, title="", fname="", xmin=None, xmax=None, ymin=None, ymax=None):
