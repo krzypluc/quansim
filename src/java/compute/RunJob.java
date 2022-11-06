@@ -157,8 +157,8 @@ public class RunJob implements StartPoint {
         // timesteps - 1: because in every cicle we're calculating wave function for the next step.
         for (int h = 0; h < (timesteps - 1); h++) {
 
-            ySecondDerivative = FFTDerivative.derivativeComplex(yHistory[h], x);
             y = yHistory[h];
+            ySecondDerivative = FFTDerivative.derivativeComplex(y, x);
 
             for (int i = 0; i < sumOfChebPolynomials.length; i++) {
                 sumOfChebPolynomials[i] = Complex.ZERO;
@@ -178,7 +178,7 @@ public class RunJob implements StartPoint {
                 potentialChebPart = y[i].multiply(potential[i]);
 
                 // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
-                normalizationPart = y[i].multiply((deltaE / 2) + Vmin);
+                normalizationPart = y[i].multiply(( - deltaE / 2) + Vmin);
 
                 // Numerator -
                 chebyshevPolynomials[1][i] = momentum.add(potentialChebPart).add(normalizationPart);
@@ -237,7 +237,7 @@ public class RunJob implements StartPoint {
             }
 
             for (int i = 0; i < y.length; i++) {
-                yHistory[h + 1][i] = yHistory[h][i].add(sumOfChebPolynomials[i]);
+                yHistory[h + 1][i] = sumOfChebPolynomials[i];
             }
         }
 

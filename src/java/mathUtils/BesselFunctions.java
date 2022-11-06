@@ -2,9 +2,10 @@ package mathUtils;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
+import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
 
 public class BesselFunctions {
-    private static final int maxEval = (int) Math.pow(2, 16);
+    private static final int maxEval = (int) Math.pow(2, 36);
 
     public static double Besselnx(int n, double x) {
         double startOfIntegral = 0.0;
@@ -13,9 +14,12 @@ public class BesselFunctions {
 
         IntegralBesselFunction bessFunction = new IntegralBesselFunction(n, x);
 
-        SimpsonIntegrator integrator = new SimpsonIntegrator();
+        SimpsonIntegrator integrator = new SimpsonIntegrator(
+                0.1,
+                0.001,
+                SimpsonIntegrator.DEFAULT_MIN_ITERATIONS_COUNT,
+                SimpsonIntegrator.SIMPSON_MAX_ITERATIONS_COUNT);
         double integral = integrator.integrate(maxEval, bessFunction, startOfIntegral, endOfIntegral);
-
         integral = integral * multiplier;
 
         return integral;
@@ -31,7 +35,7 @@ class IntegralBesselFunction implements UnivariateFunction {
         this.x = x;
     }
 
-    public double value(double tau){
+    public double value(double tau) {
         return Math.cos(n * tau - x * Math.sin(tau));
     }
 }
