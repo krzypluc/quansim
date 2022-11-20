@@ -37,7 +37,7 @@ public class Functions {
         for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
             x[i] = (-period / 2) + dx * i;
             y[i] = waveFunction(Complex.valueOf(x[i], 0.0));
-            sumOfValues = sumOfValues.add(y[i]);
+            sumOfValues = sumOfValues.add(y[i].multiply(y[i]));
             potential[i] = potential(x[i]);
 
             // Saving first value - use in integral
