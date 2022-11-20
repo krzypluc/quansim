@@ -243,6 +243,11 @@ public class RunJob implements StartPoint {
                 }
             }
 
+            // Smooth
+            for (int i = 0; i < sumOfChebPolynomials.length; i++) {
+
+            }
+
             chebIntegral = Complex.ZERO;
             // Integrate
             for (int i = 0; i < sumOfChebPolynomials.length - 1; i++) {
