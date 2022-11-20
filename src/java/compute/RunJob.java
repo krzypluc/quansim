@@ -125,7 +125,7 @@ public class RunJob implements StartPoint {
         double Vmin = RandG[2];
         double deltaE = RandG[3];
 
-        int N = (int) (R * alfa);
+        int N = (int) (((deltaE * dt) / 2) * alfa);
         int timesteps = (int) ((endTime - startTime) / dt) + 1;
 
         // Hamiltonian
@@ -152,6 +152,7 @@ public class RunJob implements StartPoint {
         Complex[] chebPrev;
         Complex ak;
         Complex[] sumOfChebPolynomials = new Complex[y.length];
+
 
         // Interating over timesteps
         // timesteps - 1: because in every cicle we're calculating wave function for the next step.

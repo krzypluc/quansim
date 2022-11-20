@@ -15,8 +15,8 @@ public class BesselFunctions {
         IntegralBesselFunction bessFunction = new IntegralBesselFunction(n, x);
 
         SimpsonIntegrator integrator = new SimpsonIntegrator(
-                0.1,
-                0.001,
+                0.01,
+                0.0001,
                 SimpsonIntegrator.DEFAULT_MIN_ITERATIONS_COUNT,
                 SimpsonIntegrator.SIMPSON_MAX_ITERATIONS_COUNT);
         double integral = integrator.integrate(maxEval, bessFunction, startOfIntegral, endOfIntegral);

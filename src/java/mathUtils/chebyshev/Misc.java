@@ -28,7 +28,7 @@ public class Misc {
 
     public static Complex getAk(int k, double deltaE, double Vmin, double dt) {
         // exp(-i * (deltaE/2 + Vmin))
-        Complex exp = Complex.I.multiply((-1) * ((deltaE / 2) + Vmin) * dt);
+        Complex exp = Complex.I.multiply((-1) * ((deltaE / 2) + Vmin) * dt).exp();
 
         // Ck = 1 if k == 0, else: Ck = 2
         int Ck = (k == 0 ? 1 : 2);
