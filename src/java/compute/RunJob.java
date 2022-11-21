@@ -6,6 +6,7 @@ import java.util.Map;
 
 import ch.systemsx.cisd.hdf5.HDF5Factory;
 import ch.systemsx.cisd.hdf5.IHDF5Writer;
+import mathUtils.SavitzkyGolay;
 import mathUtils.chebyshev.Misc;
 import miscellaneous.GroupName;
 import org.apache.commons.math3.complex.Complex;
@@ -158,6 +159,9 @@ public class RunJob implements StartPoint {
         Complex value2 = Complex.ZERO;
         Complex sumator = Complex.ZERO;
 
+        Complex energyIntegral = Complex.ZERO;
+        Complex[] energyCalc = new Complex[y.length];
+
         // Interating over timesteps
         // timesteps - 1: because in every cicle we are calculating wave function for the next step.
         for (int h = 0; h < (timesteps - 1); h++) {
@@ -188,6 +192,7 @@ public class RunJob implements StartPoint {
 
                 // Numerator -
                 chebyshevPolynomials[1][i] = momentum.add(potentialChebPart).multiply(normalizationPart);
+                energyCalc[i] = momentum.add(potentialChebPart);
 
                 // Denominator
                 //chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].divide(y[i].multiply(deltaE));
@@ -201,6 +206,20 @@ public class RunJob implements StartPoint {
                 // Add to the sum
                 sumOfChebPolynomials[i] = sumOfChebPolynomials[i].add(chebyshevPolynomials[1][i]);
             }
+
+            // Calulcate energy
+            energyIntegral = Complex.ZERO;
+            for (int i = 0; i < energyCalc.length - 1; i++) {
+                energyIntegral = energyIntegral.add(
+                        energyCalc[i].multiply(y[i].conjugate())
+                                .add(
+                                        energyCalc[i + 1].multiply(y[i + 1].conjugate())
+                                )
+                                .multiply(dx)
+                                .divide(2)
+                );
+            }
+            System.out.println(energyIntegral);
 
             for (int i = 2; i < N; i++) {
                 yDer = FFTDerivative.derivativeComplex(chebyshevPolynomials[i - 1], x);
@@ -243,9 +262,9 @@ public class RunJob implements StartPoint {
                 }
             }
 
-            // Smooth
+            // Smooth with Savitzky-Golay filter
             for (int i = 0; i < sumOfChebPolynomials.length; i++) {
-
+                sumOfChebPolynomials[i] = SavitzkyGolay.smoothWindow7(sumOfChebPolynomials, i);
             }
 
             chebIntegral = Complex.ZERO;
@@ -284,7 +303,7 @@ public class RunJob implements StartPoint {
 
             double[][][] yTransformedDouble = new double[timesteps][y.length][2];
             for (int i = 0; i < timesteps; i++) {
-                for (int j = 0; j < y.length; j++){
+                for (int j = 0; j < y.length; j++) {
                     yTransformedDouble[i][j][0] = yHistory[i][j].getReal();
                     yTransformedDouble[i][j][1] = yHistory[i][j].getImaginary();
                 }
