@@ -5,6 +5,8 @@ size.txt
 
 hdf5/*
 
+__pycache__
+
 .idea
 
 ## Core latex/pdflatex auxiliary files:

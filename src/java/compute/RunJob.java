@@ -149,7 +149,8 @@ public class RunJob implements StartPoint {
         Complex[] ySecondDerivative = new Complex[y.length];
         Complex momentum;
         Complex potentialChebPart;
-        Complex normalizationPart;
+        double normalizationPart;
+        Complex momentumNormalizationPart;
 
         Complex[] yDer;
         Complex[] chebPrevPrev;
@@ -184,14 +185,15 @@ public class RunJob implements StartPoint {
                 sumOfChebPolynomials[i] = sumOfChebPolynomials[i].add(chebyshevPolynomials[0][i]);
 
                 // Momentum - (-h^2/2m) * y'')
-                momentum = ySecondDerivative[i].multiply(momentumConst);
+                momentumNormalizationPart = Complex.I.multiply(-1);
+                momentum = ySecondDerivative[i].multiply(momentumConst).multiply(momentumNormalizationPart);
 
                 // potential * phi
                 potentialChebPart = y[i].multiply(potential[i]);
 
                 // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
                 // normalizationPart = y[i].multiply(( - deltaE / 2) + Vmin);
-                normalizationPart = Complex.I.multiply(dt).multiply(-1).divide(R);
+                normalizationPart = dt / R;
 
                 // Numerator -
                 chebyshevPolynomials[1][i] = momentum.add(potentialChebPart).multiply(normalizationPart);
@@ -238,15 +240,20 @@ public class RunJob implements StartPoint {
 
                 for (int j = 0; j < chebyshevPolynomials[i].length; j++) {
                     // --- Calculate (-2i) * Hnorm * cheb[i-1]
+                    // Momentum normalization part is -i
                     // Momentum - (-h^2/2m) * y'')
-                    momentum = yDer[j].multiply(momentumConst);
+
+                    momentumNormalizationPart = Complex.I.multiply(-1);
+                    momentum = yDer[j].multiply(momentumConst).multiply(momentumNormalizationPart);
 
                     // potential * phi
                     potentialChebPart = chebPrev[j].multiply(potential[j]);
 
                     // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
                     // normalizationPart = chebPrev[j].multiply((deltaE / 2) + Vmin);
-                    normalizationPart = Complex.I.multiply(dt).multiply(-1).divide(R);
+
+                    // Normalisation part
+                    normalizationPart = dt / R;
 
                     // Numerator
                     chebyshevPolynomials[i][j] = momentum.add(potentialChebPart).multiply(normalizationPart);
