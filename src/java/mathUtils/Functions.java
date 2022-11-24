@@ -62,6 +62,7 @@ public class Functions {
         ret.put("integral", integral);
         ret.put("potential", potential);
         return ret;
+        PCJ.ge
     }
     
     public static Map<String, Object> loadConfigFromYaml(String path) throws IOException {

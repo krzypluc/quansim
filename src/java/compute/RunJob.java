@@ -127,6 +127,7 @@ public class RunJob implements StartPoint {
         double deltaE = RandG[3];
 
         int N = (int) (((deltaE * dt) / 2) * alfa);
+        //int N = 183;
         int timesteps = (int) ((endTime - startTime) / dt) + 1;
 
         // Hamiltonian
@@ -142,6 +143,8 @@ public class RunJob implements StartPoint {
         // Get Bessel values
         Complex a0 = Misc.getAk(0, R, G);
         Complex a1 = Misc.getAk(1, R, G);
+
+        // Matrix containing previous Chebyshev polynomials
 
         Complex[] ySecondDerivative = new Complex[y.length];
         Complex momentum;
@@ -188,7 +191,7 @@ public class RunJob implements StartPoint {
 
                 // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
                 // normalizationPart = y[i].multiply(( - deltaE / 2) + Vmin);
-                normalizationPart = Complex.I.multiply(dt).divide(R);
+                normalizationPart = Complex.I.multiply(dt).multiply(-1).divide(R);
 
                 // Numerator -
                 chebyshevPolynomials[1][i] = momentum.add(potentialChebPart).multiply(normalizationPart);
@@ -201,28 +204,34 @@ public class RunJob implements StartPoint {
                 //chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].multiply(2);
 
                 // Multiply by a1
-                chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].multiply(a1);
+                //chebyshevPolynomials[1][i] = chebyshevPolynomials[1][i].multiply(a1);
 
                 // Add to the sum
-                sumOfChebPolynomials[i] = sumOfChebPolynomials[i].add(chebyshevPolynomials[1][i]);
+                sumOfChebPolynomials[i] = sumOfChebPolynomials[i].add(chebyshevPolynomials[1][i].multiply(a1));
             }
 
             // Calulcate energy
-            energyIntegral = Complex.ZERO;
-            for (int i = 0; i < energyCalc.length - 1; i++) {
-                energyIntegral = energyIntegral.add(
-                        energyCalc[i].multiply(y[i].conjugate())
-                                .add(
-                                        energyCalc[i + 1].multiply(y[i + 1].conjugate())
-                                )
-                                .multiply(dx)
-                                .divide(2)
-                );
-            }
-            System.out.println(energyIntegral);
+//            energyIntegral = Complex.ZERO;
+//            for (int i = 0; i < energyCalc.length - 1; i++) {
+//                energyIntegral = energyIntegral.add(
+//                        energyCalc[i].multiply(y[i].conjugate())
+//                                .add(
+//                                        energyCalc[i + 1].multiply(y[i + 1].conjugate())
+//                                )
+//                                .multiply(dx)
+//                                .divide(2)
+//                );
+//            }
+//            System.out.println(energyIntegral);
 
             for (int i = 2; i < N; i++) {
                 yDer = FFTDerivative.derivativeComplex(chebyshevPolynomials[i - 1], x);
+
+                // Savitzky-Golay Filter
+                for (int j = 0; j < yDer.length; j++) {
+                    yDer[j] = SavitzkyGolay.smoothWindow7(yDer, j);
+                }
+
                 chebPrevPrev = chebyshevPolynomials[i - 2];
                 chebPrev = chebyshevPolynomials[i - 1];
                 ak = Misc.getAk(i, R, G);
@@ -237,7 +246,7 @@ public class RunJob implements StartPoint {
 
                     // Norm part - (deltaE * y[i]) / 2 + Vmin * y[i]
                     // normalizationPart = chebPrev[j].multiply((deltaE / 2) + Vmin);
-                    normalizationPart = Complex.I.multiply(dt).divide(R);
+                    normalizationPart = Complex.I.multiply(dt).multiply(-1).divide(R);
 
                     // Numerator
                     chebyshevPolynomials[i][j] = momentum.add(potentialChebPart).multiply(normalizationPart);
@@ -255,10 +264,10 @@ public class RunJob implements StartPoint {
                     chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].add(chebPrevPrev[j]);
 
                     // Multiply by ak
-                    chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j].multiply(ak);
+                    //chebyshevPolynomials[i][j] = chebyshevPolynomials[i][j];
 
                     // Add polynomial
-                    sumOfChebPolynomials[j] = sumOfChebPolynomials[j].add(chebyshevPolynomials[i][j]);
+                    sumOfChebPolynomials[j] = sumOfChebPolynomials[j].add(chebyshevPolynomials[i][j].multiply(ak));
                 }
             }
 
