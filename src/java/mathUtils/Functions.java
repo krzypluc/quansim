@@ -11,15 +11,21 @@ import java.util.*;
 public class Functions {
     public static Complex waveFunction(Complex x) {
         // valueOfExpotential = -1 * x^2
-        Complex valueOfExpontetial = x.multiply(x).multiply(-1);
+        Complex valueOfExpontetial = x.pow(2).multiply(-1);
 
         // returns e^((-1) * x^2)
         return valueOfExpontetial.exp();
     }
 
     public static double potential(double x){
-        // returns (x^2) / 2
-        return Math.pow(x, 2) / 2;
+        double value;
+        // harmonic
+        // value = Math.pow(x, 2) / 2;
+
+        // no potential
+        value = 0;
+
+        return value;
     }
 
     public static HashMap<String, Object> initYandX(Complex[] y, double[] x, double period, double dx) {

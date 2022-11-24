@@ -41,6 +41,7 @@ public class RunJob implements StartPoint {
     @Override
     public void main() {
         // Seting values from config
+        // by default config is stored in config folder
         int RESOLUTION_EXPOTENTIAL = (int) domain.get("resolutionExpotential");
         int PERIOD_NUMBER = (int) domain.get("period");
         int RESOLUTION = (int) Math.pow(2, RESOLUTION_EXPOTENTIAL);
