@@ -1,10 +1,8 @@
 package mathUtils.chebyshev;
 
-import mathUtils.FFTDerivative;
+import mathUtils.DerivativeFFT;
 import mathUtils.SavitzkyGolay;
 import org.apache.commons.math3.complex.Complex;
-
-import java.util.HashMap;
 
 public class ChebyshevAprox {
     public static Complex[][][] aproximate(double[] x, Complex[] y, int timesteps, double dt, double[] potential, double mass, double planckConstant, double alfa, double dx){
@@ -60,7 +58,7 @@ public class ChebyshevAprox {
         for (int h = 0; h < (timesteps - 1); h++) {
 
             y = yHistory[h];
-            ySecondDerivative = FFTDerivative.derivativeComplex(y, x);
+            ySecondDerivative = DerivativeFFT.derivativeComplex(y, x);
 
             for (int i = 0; i < sumOfChebPolynomials.length; i++) {
                 sumOfChebPolynomials[i] = Complex.ZERO;
@@ -116,7 +114,7 @@ public class ChebyshevAprox {
 //            System.out.println(energyIntegral);
 
             for (int i = 2; i < N; i++) {
-                yDer = FFTDerivative.derivativeComplex(chebyshevPolynomials[i - 1], x);
+                yDer = DerivativeFFT.derivativeComplex(chebyshevPolynomials[i - 1], x);
 
                 // Savitzky-Golay Filter
                 for (int j = 0; j < yDer.length; j++) {

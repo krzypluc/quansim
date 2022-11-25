@@ -3,7 +3,7 @@ package mathUtils;
 
 import org.apache.commons.math3.complex.Complex;
 
-public class FTUtils {
+public class FourierTransformUtilities {
     public static Complex[] forwardDFT (Complex[] values){
 
         if (values.length == 1){

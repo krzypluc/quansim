@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mathUtils.chebyshev.ChebyshevAprox;
-import mathUtils.chebyshev.Misc;
 import miscellaneous.hdf5Handler;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.*;
@@ -121,7 +120,17 @@ public class RunJob implements StartPoint {
         PCJ.waitFor(SharedRunJob.y);
 
         // Chebyshev aproxymation
-        Complex[][][] chebOutput = ChebyshevAprox.aproximate(x, y, timesteps, dt, potential, mass, planckConstant, alfa, dx);
+        Complex[][][] chebOutput = ChebyshevAprox.aproximate(
+                x,
+                y,
+                timesteps,
+                dt,
+                potential,
+                mass,
+                planckConstant,
+                alfa,
+                dx
+        );
         Complex[][] yHistory = chebOutput[0];
         Complex[][] yDerHistory = chebOutput[1];
 
