@@ -7,7 +7,12 @@ import org.apache.commons.math3.complex.Complex;
 import java.util.Map;
 
 public class hdf5Handler {
-    public static void saveYandDerivative(double[] x, Complex[][] yHistory, Complex[][] yDerHistory, int timesteps, Map<String, String> filePaths){
+    public static void saveYandDerivative(
+            double[] x,
+            Complex[][] yHistory,
+            Complex[][] yDerHistory,
+            int timesteps, Map<String,
+            String> filePaths) {
         int yLength = x.length;
 
         String groupName = GroupName.getGroupName();

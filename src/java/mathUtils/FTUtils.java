@@ -14,7 +14,7 @@ public class FTUtils {
 
         for (int i = 0; i < dftTransform.length; i++){
             dftTransform[i] = Complex.valueOf(0, 0);
-            
+
             for (int j = 0; j < values.length; j++){
                 Complex valueOfExpotential = Complex.valueOf(0, -2 * Math.PI * j * i / values.length);
                 Complex w = valueOfExpotential.exp();
@@ -45,7 +45,7 @@ public class FTUtils {
             }
             freq[i] = freq[i] / (d * n);
         }
-        
+
         return freq;
     }
 }

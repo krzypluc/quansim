@@ -7,4 +7,4 @@
 
 srun hostname > nodes.txt
 
-srun -N 1 -n 1 -c 48 java -jar accquansim-0.1-beta-shaded config/config.yml
+srun -N 1 -n 1 -c 48 java -jar accquansim-0.1-beta-shaded.jar config/config.yml

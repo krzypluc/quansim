@@ -2,7 +2,6 @@ package mathUtils;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
-import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
 
 public class BesselFunctions {
     private static final int maxEval = (int) Math.pow(2, 36);
