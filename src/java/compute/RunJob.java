@@ -4,8 +4,9 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import mathUtils.ParallelIntegrator;
 import mathUtils.chebyshev.ChebyshevAprox;
-import miscellaneous.hdf5Handler;
+import miscellaneous.HDF5Handler;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.*;
 
@@ -19,15 +20,13 @@ public class RunJob implements StartPoint {
 
     @Storage(RunJob.class)
     public enum SharedRunJob {
-        x, y, integral, transformedFromTheNextProcess, transformed, potential
+        x, y, integral, potential
     }
 
     private double[] x;
     private Complex[] y;
     private double[] potential;
     private Complex integral = Complex.ZERO;
-    private Complex[] transformedFromTheNextProcess;
-    private Complex[] transformed;
 
     private static Map<String, Object> config;
     private static Map<String, String> filePaths;
@@ -36,7 +35,7 @@ public class RunJob implements StartPoint {
     private static Map<String, Double> time;
 
     @Override
-    public void main() {
+    public void main() throws IOException {
         // Seting values from config
         // by default config is stored in config folder
         int RESOLUTION_EXPOTENTIAL = (int) domain.get("resolutionExpotential");
@@ -60,7 +59,6 @@ public class RunJob implements StartPoint {
         x = new double[RESOLUTION];
         y = new Complex[RESOLUTION];
         integral = Complex.ZERO;
-        transformedFromTheNextProcess = new Complex[0];
 
         // Use constants as process id and number of processes
         int procID = PCJ.myId();
@@ -78,27 +76,8 @@ public class RunJob implements StartPoint {
         // Casting, because initVal returns objects, not certain types.
         y = (Complex[]) initVal.get("y");
         x = (double[]) initVal.get("x");
-        integral = (Complex) initVal.get("integral");
+        //integral = (Complex) initVal.get("integral");
         potential = (double[]) initVal.get("potential");
-
-        // ---------------- PARALLEL INTEGRAL
-        // Collect integral and share to processes final value.
-        if (procID == 0) {
-            Complex coll = PCJ.reduce(
-                    // Lambda operator / reductor
-                    (subtotal, element) -> subtotal.add(element),
-                    SharedRunJob.integral);
-            // Broadcast to all processes
-            PCJ.asyncBroadcast(coll, SharedRunJob.integral);
-        }
-
-        PCJ.waitFor(SharedRunJob.integral, 1);
-
-        // Normalize wave function
-        for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
-
-            y[i] = y[i].divide(integral);
-        }
 
         // Collect all calculations
         if (procID == 0) {
@@ -119,24 +98,37 @@ public class RunJob implements StartPoint {
 
         PCJ.waitFor(SharedRunJob.y);
 
+        // Integrate parallely
+        ParallelIntegrator parallelIntegrator = new ParallelIntegrator();
+        parallelIntegrator.main();
+
+        // Barrier
+        PCJ.barrier();
+
+        // Normalize wave function
+        for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
+            y[i] = y[i].divide(integral);
+        }
+
         // Chebyshev aproxymation
         Complex[][][] chebOutput = ChebyshevAprox.aproximate(
                 x,
                 y,
+                potential,
                 timesteps,
                 dt,
-                potential,
                 mass,
                 planckConstant,
                 alfa,
                 dx
         );
+
         Complex[][] yHistory = chebOutput[0];
         Complex[][] yDerHistory = chebOutput[1];
 
         // Saving to HDF5
         if (procID == 0) {
-            hdf5Handler.saveYandDerivative(x, yHistory, yDerHistory, timesteps, filePaths);
+            HDF5Handler.saveYandDerivative(x, yHistory, yDerHistory, timesteps, filePaths);
         }
     }
 

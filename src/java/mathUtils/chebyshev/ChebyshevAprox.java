@@ -5,7 +5,7 @@ import mathUtils.SavitzkyGolay;
 import org.apache.commons.math3.complex.Complex;
 
 public class ChebyshevAprox {
-    public static Complex[][][] aproximate(double[] x, Complex[] y, int timesteps, double dt, double[] potential, double mass, double planckConstant, double alfa, double dx){
+    public static Complex[][][] aproximate(double[] x, Complex[] y, double[] potential, int timesteps, double dt, double mass, double planckConstant, double alfa, double dx){
 
         double[] RandG = Misc.getChebyshevConstants(dt, potential, mass, dx);
         double R = RandG[0];

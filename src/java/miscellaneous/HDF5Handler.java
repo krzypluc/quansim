@@ -6,7 +6,7 @@ import org.apache.commons.math3.complex.Complex;
 
 import java.util.Map;
 
-public class hdf5Handler {
+public class HDF5Handler {
     public static void saveYandDerivative(
             double[] x,
             Complex[][] yHistory,

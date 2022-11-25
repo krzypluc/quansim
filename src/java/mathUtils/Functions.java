@@ -1,5 +1,6 @@
 package mathUtils;
 
+import org.apache.commons.math3.analysis.function.HarmonicOscillator;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.PCJ;
 import org.yaml.snakeyaml.Yaml;
@@ -9,12 +10,41 @@ import java.util.*;
 
 
 public class Functions {
-    public static Complex waveFunction(Complex x) {
-        // valueOfExpotential = -1 * x^2
-        Complex valueOfExpontetial = x.pow(2).multiply(-1);
+    public enum Potential {
+        HARMONIC,
+        NONE
+    }
 
-        // returns e^((-1) * x^2)
-        return valueOfExpontetial.exp();
+    public enum WaveFunction {
+        GAUSSIAN,
+        DIRACSDELTA
+    }
+
+    public static Complex waveFunction(double x, WaveFunction func) {
+        Complex value;
+
+        switch (func) {
+            case GAUSSIAN:
+                // valueOfExpotential = -1 * x^2
+                value = Complex.valueOf(Math.pow(x, 2) * (-1));
+
+                // returns e^((-1) * x^2)
+                value = value.exp();
+                return value;
+
+            case DIRACSDELTA:
+                if (-2 > x){
+                    return Complex.ZERO;
+                }
+                else{
+                    value = Complex.I.multiply(x).exp();
+                    return value;
+                }
+
+
+            default:
+                throw new RuntimeException("There is no such implemented WaveFunction.");
+        }
     }
 
     public static double potential(double x){
@@ -42,7 +72,7 @@ public class Functions {
 
         for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
             x[i] = (-period / 2) + dx * i;
-            y[i] = waveFunction(Complex.valueOf(x[i], 0.0));
+            y[i] = waveFunction(x[i], WaveFunction.GAUSSIAN);
             sumOfValues = sumOfValues.add(y[i].multiply(y[i]));
             potential[i] = potential(x[i]);
 
@@ -77,3 +107,4 @@ public class Functions {
         return yaml.load(inputStream);
     }
 }
+
