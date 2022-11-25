@@ -24,13 +24,16 @@ if __name__ == "__main__":
 
         timesteps = int((float(endTime) - float(startTime)) / dt) + 1
         y = []
+        yDer = []
         for i in range(timesteps):
-            y.append(h5File[datasetName + "/" + str(i)][:])
+            y.append(h5File[datasetName + "/y/" + str(i)][:])
+            yDer.append(h5File[datasetName + "/yDer/" + str(i)][:])
         x = h5File[datasetName + "/x"][:]
 
 
-    for step in y:
-        step = np.array([complex(x, y) for x, y in step])
+    for func, funcDer in zip(y, yDer):
+        func = np.array([complex(x, y) for x, y in func])
+        funcDer = np.array([complex(x, y) for x, y in funcDer])
 
-    for step in y:
-        diagrams.ComplexPlot(x, step)
+    for func, funcDer in zip(y, yDer):
+        diagrams.ComplexTwoPlots(x, func, funcDer)

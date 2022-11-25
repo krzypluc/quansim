@@ -9,6 +9,7 @@ import ch.systemsx.cisd.hdf5.IHDF5Writer;
 import mathUtils.SavitzkyGolay;
 import mathUtils.chebyshev.Misc;
 import miscellaneous.GroupName;
+import miscellaneous.hdf5Handler;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.*;
 import mathUtils.FFTDerivative;
@@ -139,6 +140,7 @@ public class RunJob implements StartPoint {
 
         // Matrix containing history of timesteps
         Complex[][] yHistory = new Complex[timesteps][y.length];
+        Complex[][] yDerHistory = new Complex[timesteps][y.length];
         yHistory[0] = y;
 
         // Get Bessel values
@@ -305,38 +307,21 @@ public class RunJob implements StartPoint {
                 sumOfChebPolynomials[i] = sumOfChebPolynomials[i].divide(chebIntegral);
             }
 
+            // Saving history
             for (int i = 0; i < y.length; i++) {
                 yHistory[h + 1][i] = sumOfChebPolynomials[i];
+                yDerHistory[h][i] = ySecondDerivative[i];
+            }
+
+            // for the last timestep
+            if (h == (timesteps - 2)){
+                yDerHistory[h + 1] = ySecondDerivative;
             }
         }
 
         // Saving to HDF5
         if (procID == 0) {
-            String groupName = GroupName.getGroupName();
-            String hdf5FileName = (String) filePaths.get("hdf5JavaFile");
-
-            IHDF5Writer writer = HDF5Factory.open(hdf5FileName);
-            writer.writeDoubleArray(groupName + "/x", x);
-
-            double[][][] yTransformedDouble = new double[timesteps][y.length][2];
-            for (int i = 0; i < timesteps; i++) {
-                for (int j = 0; j < y.length; j++) {
-                    yTransformedDouble[i][j][0] = yHistory[i][j].getReal();
-                    yTransformedDouble[i][j][1] = yHistory[i][j].getImaginary();
-                }
-            }
-
-            double[][] yDouble = new double[y.length][2];
-            for (int i = 0; i < y.length; i++) {
-                yDouble[i][0] = y[i].getReal();
-                yDouble[i][1] = y[i].getImaginary();
-            }
-
-            for (int i = 0; i < timesteps; i++) {
-                writer.writeDoubleMatrix(groupName + "/" + i, yTransformedDouble[i]);
-            }
-
-            writer.close();
+            hdf5Handler.saveYandDerivative(x, yHistory, yDerHistory, timesteps, filePaths);
         }
     }
 

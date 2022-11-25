@@ -71,7 +71,7 @@ public class Functions {
     }
     
     public static Map<String, Object> loadConfigFromYaml(String path) throws IOException {
-        InputStream inputStream = new FileInputStream(new File("config/config.yml"));
+        InputStream inputStream = new FileInputStream(new File(path));
 
         Yaml yaml = new Yaml();
         return yaml.load(inputStream);

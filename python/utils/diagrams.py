@@ -4,7 +4,7 @@ def ComplexPlot(x, y):
     plt.plot(x, y.real, x, y.imag)
     plt.show()
 
-def ComplexTwoPlots(x, y1, y2, title1, title2, title="", fname="", xmin=None, xmax=None, ymin=None, ymax=None):
+def ComplexTwoPlots(x, y1, y2, title1="", title2="", title="", fname="", xmin=None, xmax=None, ymin=None, ymax=None):
     fig, ax = plt.subplots(1, 2)
     fig.set_size_inches(18.5, 10.5)
     fig.suptitle(title)
