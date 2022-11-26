@@ -10,6 +10,8 @@ import java.util.*;
 
 
 public class Functions {
+
+    //TODO
     public enum Potential {
         HARMONIC,
         NONE
