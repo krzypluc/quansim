@@ -1,10 +1,10 @@
 package compute;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.Map;
 
 import mathUtils.InitializeWaveFunction;
+import mathUtils.ParallelFFT;
 import mathUtils.ParallelIntegrator;
 import mathUtils.chebyshev.ChebyshevAprox;
 import miscellaneous.HDF5Handler;
@@ -16,10 +16,10 @@ import static mathUtils.Functions.*;
 
 
 @SuppressWarnings("unused")
-@RegisterStorage(RunJob.SharedRunJob.class)
-public class RunJob implements StartPoint {
+@RegisterStorage(RunComputations.SharedRunJob.class)
+public class RunComputations implements StartPoint {
 
-    @Storage(RunJob.class)
+    @Storage(RunComputations.class)
     public enum SharedRunJob {
         x, y, integral, potential
     }
@@ -87,6 +87,9 @@ public class RunJob implements StartPoint {
             y[i] = y[i].divide(integral);
         }
 
+        ParallelFFT fft = new ParallelFFT(y, x);
+        fft.main();
+
         // Chebyshev aproxymation
         Complex[][][] chebOutput = ChebyshevAprox.aproximate(
                 x,
@@ -125,9 +128,8 @@ public class RunJob implements StartPoint {
         time = (Map<String, Double>) config.get("time");
 
         String nodesFile = filePaths.get("nodesFile");
-
-
-        PCJ.executionBuilder(RunJob.class)
+        
+        PCJ.executionBuilder(RunComputations.class)
                 .addNodes(new File(nodesFile))
                 .start();
     }
