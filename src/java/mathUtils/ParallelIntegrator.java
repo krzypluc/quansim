@@ -1,12 +1,21 @@
 package mathUtils;
 
-
+import compute.RunComputations;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.PCJ;
+import org.pcj.RegisterStorage;
+import org.pcj.StartPoint;
 
-public class Integrator {
 
-    public static Complex TrapezoidComplex1D(Complex[] y, double[] x, double dx) {
+@RegisterStorage(RunComputations.SharedRunJob.class)
+public class ParallelIntegrator implements StartPoint {
+
+    @Override
+    public void main() {
+        double[] x = PCJ.get(0, RunComputations.SharedRunJob.x);
+        Complex[] y = PCJ.get(0, RunComputations.SharedRunJob.y);
+
+        double dx = x[1] - x[0];
         Complex sumOfValues = Complex.ZERO;
         Complex firstValue = Complex.ZERO;
         Complex lastValue = Complex.ZERO;
@@ -29,25 +38,21 @@ public class Integrator {
             }
         }
 
-        Complex integral = sumOfValues
+        Complex parIntegral = sumOfValues
                 .multiply(2.0)
                 .subtract(lastValue)
                 .subtract(firstValue)
                 .multiply(dx / 2);
 
-        return integral;
-    }
+        PCJ.put(parIntegral, PCJ.myId(), RunComputations.SharedRunJob.integral);
 
-    public static double TrapezoidDouble1D(double[] y, double[] x) {
-        double sum = 0;
-        double dx = x[1] - x[0];
-        double val;
-
-        for (int i = 0; i < (y.length - 1); i++) {
-            val = (y[i] + y[i + 1]) * dx / 2;
-            sum += val;
+        if (procID == 0) {
+            parIntegral = PCJ.reduce(
+                    (subtotal, element) -> subtotal.add(element),
+                    RunComputations.SharedRunJob.integral
+            );
+            // Broadcast to all processes
+            PCJ.broadcast(parIntegral, RunComputations.SharedRunJob.integral);
         }
-
-        return sum;
     }
 }

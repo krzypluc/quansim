@@ -17,7 +17,7 @@
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <transformers>
                 <transformer>
-                  <mainClass>compute.RunJob</mainClass>
+                  <mainClass>compute.RunComputations</mainClass>
                 </transformer>
               </transformers>
             </configuration>

@@ -5,12 +5,12 @@ import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
 
-public class FFTDerivative {
+public class DerivativeFFT {
 
     public static Complex[] derivativeComplex(Complex[] y, double[] x, int diffDegree) {
         FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
         Complex[] y_transformed = fft.transform(y, TransformType.FORWARD);
-        double[] fk = FTUtils.freq(x);
+        double[] fk = FourierTransformUtilities.freq(x);
 
         for (int i = 0; i < y_transformed.length; i++) {
             y_transformed[i] = y_transformed[i]
@@ -25,7 +25,7 @@ public class FFTDerivative {
     public static Complex[] derivativeComplex(Complex[] y, double[] x) {
         FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
         Complex[] y_transformed = fft.transform(y, TransformType.FORWARD);
-        double[] fk = FTUtils.freq(x);
+        double[] fk = FourierTransformUtilities.freq(x);
 
         for (int i = 0; i < y_transformed.length; i++) {
             y_transformed[i] = y_transformed[i]

@@ -11,6 +11,9 @@ if __name__ == "__main__":
         data = yaml.load(yamlFile, Loader=SafeLoader)
 
     h5FilePath = data["filePaths"]["hdf5PythonFile"]
+    startTime = data["time"]["startTime"]
+    endTime = data["time"]["endTime"]
+    dt = data["time"]["dt"]
 
     with h5py.File(h5FilePath, 'r') as h5File:
         calculationFolders = list(h5File.keys())
@@ -19,10 +22,18 @@ if __name__ == "__main__":
         calculationFolders = sorted(calculationFolders, key=int, reverse=True)
         datasetName = calculationFolders[0]
 
-        y_derr = h5File[datasetName + "/y_double_derr"][:]
-        y = h5File[datasetName + "/y"][:]
+        timesteps = int((float(endTime) - float(startTime)) / dt) + 1
+        y = []
+        yDer = []
+        for i in range(timesteps):
+            y.append(h5File[datasetName + "/y/" + str(i)][:])
+            yDer.append(h5File[datasetName + "/yDer/" + str(i)][:])
         x = h5File[datasetName + "/x"][:]
 
-    y_derr = np.array([complex(x, y) for x, y in y_derr])
 
-    diagrams.ComplexTwoPlots(x, y, y_derr, "Wave function", "Derivative of WF")
+    for func, funcDer in zip(y, yDer):
+        func = np.array([complex(x, y) for x, y in func])
+        funcDer = np.array([complex(x, y) for x, y in funcDer])
+
+    for func, funcDer in zip(y, yDer):
+        diagrams.ComplexTwoPlots(x, func, funcDer)

@@ -7,6 +7,4 @@
 
 srun hostname > nodes.txt
 
-javac -d classes -sourcepath ./src/main/java -classpath ./packages/pcj.jar ./src/main/java/compute/E1aClass.java
-
-srun -N 1 -n 1 -c 48 java -cp "classes:./packages/pcj.jar" compute.E1aClass
+srun -N 1 -n 1 -c 48 java -jar accquansim-0.1-beta-shaded.jar config/config.yml

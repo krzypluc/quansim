@@ -26,16 +26,15 @@ public class Misc {
         return new double[]{R, G, Vmin, deltaE};
     }
 
-    public static Complex getAk(int k, double deltaE, double Vmin, double dt) {
-        // exp(-i * (deltaE/2 + Vmin))
-        Complex exp = Complex.I.multiply((-1) * ((deltaE / 2) + Vmin) * dt);
+    public static Complex getAk(int k, double R, double G) {
+        // exp(i * (R + G))
+        Complex exp = Complex.I.multiply(R + G).exp();
 
         // Ck = 1 if k == 0, else: Ck = 2
         int Ck = (k == 0 ? 1 : 2);
 
-        double alfaInAk = (deltaE * dt) / 2;
         // e^(i * (R + G)) * Ck * Jk(R)
-        exp = exp.multiply(Ck).multiply(BesselFunctions.Besselnx(k, alfaInAk));
+        exp = exp.multiply(Ck).multiply(BesselFunctions.Besselnx(k, R));
 
         return exp;
     }
