@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import mathUtils.InitializeWaveFunction;
 import mathUtils.ParallelIntegrator;
 import mathUtils.chebyshev.ChebyshevAprox;
 import miscellaneous.HDF5Handler;
@@ -58,6 +59,7 @@ public class RunJob implements StartPoint {
         // One dimensional wave function: x - arguments, y - values
         x = new double[RESOLUTION];
         y = new Complex[RESOLUTION];
+        potential = new double[RESOLUTION];
         integral = Complex.ZERO;
 
         // Use constants as process id and number of processes
@@ -71,42 +73,17 @@ public class RunJob implements StartPoint {
         // Calculate values of initial wave function.
         // Getting and casting all values from returned array.
         // Calulcate integral in all processes.
-        HashMap<String, Object> initVal = initYandX(y, x, period, dx);
+        InitializeWaveFunction waveFunctionInit = new InitializeWaveFunction(y, x, period, dx);
+        waveFunctionInit.main();
 
-        // Casting, because initVal returns objects, not certain types.
-        y = (Complex[]) initVal.get("y");
-        x = (double[]) initVal.get("x");
-        //integral = (Complex) initVal.get("integral");
-        potential = (double[]) initVal.get("potential");
-
-        // Collect all calculations
-        if (procID == 0) {
-            int procIncr = 1;
-            for (int i = lengthOfpiece; i < y.length; i++) {
-                x[i] = PCJ.get(procIncr, SharedRunJob.x, i);
-                y[i] = PCJ.get(procIncr, SharedRunJob.y, i);
-                potential[i] = PCJ.get(procIncr, SharedRunJob.potential, i);
-
-                if ((i + 1) % lengthOfpiece == 0) {
-                    procIncr++;
-                }
-            }
-            PCJ.asyncBroadcast(y, SharedRunJob.y);
-            PCJ.asyncBroadcast(x, SharedRunJob.x);
-            PCJ.asyncBroadcast(potential, SharedRunJob.potential);
-        }
-
-        PCJ.waitFor(SharedRunJob.y);
-
-        // Integrate parallely
+        // Integrate parallely - putting value on "itegral"
         ParallelIntegrator parallelIntegrator = new ParallelIntegrator();
         parallelIntegrator.main();
 
-        // Barrier
-        PCJ.barrier();
+        PCJ.waitFor(SharedRunJob.y);
 
         // Normalize wave function
-        for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
+        for (int i = 0; i < y.length; i++) {
             y[i] = y[i].divide(integral);
         }
 

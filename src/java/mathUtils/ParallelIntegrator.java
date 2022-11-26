@@ -13,8 +13,8 @@ public class ParallelIntegrator implements StartPoint {
 
     @Override
     public void main() {
-        double[] x = PCJ.get(PCJ.myId(), RunJob.SharedRunJob.x);
-        Complex[] y = PCJ.get(PCJ.myId(), RunJob.SharedRunJob.y);
+        double[] x = PCJ.get(0, RunJob.SharedRunJob.x);
+        Complex[] y = PCJ.get(0, RunJob.SharedRunJob.y);
 
         double dx = x[1] - x[0];
         Complex sumOfValues = Complex.ZERO;
@@ -39,21 +39,21 @@ public class ParallelIntegrator implements StartPoint {
             }
         }
 
-        Complex integral = sumOfValues
+        Complex parIntegral = sumOfValues
                 .multiply(2.0)
                 .subtract(lastValue)
                 .subtract(firstValue)
                 .multiply(dx / 2);
 
-        if (procID == 0) {
-            Complex coll = PCJ.reduce(
-                    // Lambda operator / reductor
-                    (subtotal, element) -> subtotal.add(element),
-                    RunJob.SharedRunJob.integral);
-            // Broadcast to all processes
-            PCJ.asyncBroadcast(coll, RunJob.SharedRunJob.integral);
-        }
+        PCJ.put(parIntegral, PCJ.myId(), RunJob.SharedRunJob.integral);
 
-        PCJ.waitFor(RunJob.SharedRunJob.integral);
+        if (procID == 0) {
+            parIntegral = PCJ.reduce(
+                    (subtotal, element) -> subtotal.add(element),
+                    RunJob.SharedRunJob.integral
+            );
+            // Broadcast to all processes
+            PCJ.broadcast(parIntegral, RunJob.SharedRunJob.integral);
+        }
     }
 }
