@@ -126,6 +126,7 @@ public class RunComputations implements StartPoint {
             y[i] = y[i].divide(integral);
         }
 
+        // Not working yet - testing purpose
         ParallelFFT fft = new ParallelFFT(y, x);
         fft.main();
 
