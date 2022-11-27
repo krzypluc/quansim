@@ -1,4 +1,4 @@
-package mathUtils;
+package parallelIntegrator;
 
 import compute.RunComputations;
 import org.apache.commons.math3.complex.Complex;
@@ -6,6 +6,8 @@ import org.pcj.PCJ;
 import org.pcj.RegisterStorage;
 import org.pcj.StartPoint;
 import org.pcj.Storage;
+
+import java.io.Serializable;
 
 
 @RegisterStorage(RunComputations.SharedRunJob.class)
@@ -42,21 +44,26 @@ public class ParallelComplexIntegrator implements StartPoint {
             }
         }
 
-        Complex parIntegral = sumOfValues
+        ParalellComplexIntegratorStorage integral = new ParalellComplexIntegratorStorage();
+
+        integral.setIntegralValue(
+                sumOfValues
                 .multiply(2.0)
                 .subtract(lastValue)
                 .subtract(firstValue)
-                .multiply(dx / 2);
+                .multiply(dx / 2)
+        );
 
-        PCJ.put(parIntegral, PCJ.myId(), RunComputations.SharedRunJob.integral);
+        PCJ.put(integral, PCJ.myId(), RunComputations.SharedRunJob.parallelIntegralStorage);
 
         if (procID == 0) {
-            parIntegral = PCJ.reduce(
+            integral = PCJ.reduce(
                     (subtotal, element) -> subtotal.add(element),
-                    RunComputations.SharedRunJob.integral
+                    RunComputations.SharedRunJob.parallelIntegralStorage
             );
             // Broadcast to all processes
-            PCJ.broadcast(parIntegral, RunComputations.SharedRunJob.integral);
+            PCJ.broadcast(integral, RunComputations.SharedRunJob.parallelIntegralStorage);
         }
     }
 }
+

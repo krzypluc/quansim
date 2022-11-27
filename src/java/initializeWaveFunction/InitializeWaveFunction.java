@@ -1,6 +1,7 @@
-package mathUtils;
+package initializeWaveFunction;
 
 import compute.RunComputations;
+import mathUtils.Functions;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.PCJ;
 import org.pcj.RegisterStorage;
@@ -33,7 +34,7 @@ public class InitializeWaveFunction implements StartPoint {
         // All processes calulculates their part of x, y and potential
         for (int i = procID * lengthOfpiece; i < (procID + 1) * lengthOfpiece; i++) {
             x[i] = (-period / 2) + dx * i;
-            y[i] = Functions.waveFunction(x[i], Functions.WaveFunction.GAUSSIAN);
+            y[i] = Functions.waveFunction(x[i], Functions.WaveFunction.DIRACSDELTA);
             potential[i] = Functions.potential(x[i]);
 
             // Put all variables on processor nr 0
@@ -42,15 +43,20 @@ public class InitializeWaveFunction implements StartPoint {
             PCJ.asyncPut(potential[i], 0, RunComputations.SharedRunJob.potential, i);
         }
 
+        PCJ.barrier();
 
         if (procID == 0) {
-            y = PCJ.get(0, RunComputations.SharedRunJob.y);
-            x = PCJ.get(0, RunComputations.SharedRunJob.x);
-            potential = PCJ.get(0, RunComputations.SharedRunJob.potential);
+            InitializeWaveFunctionStorage initWFStorage = new InitializeWaveFunctionStorage(
+                    // get y
+                    PCJ.get(0, RunComputations.SharedRunJob.y),
+                    // get x
+                    PCJ.get(0, RunComputations.SharedRunJob.x),
+                    // get potential
+                    PCJ.get(0, RunComputations.SharedRunJob.potential)
+            );
 
-            PCJ.asyncBroadcast(y, RunComputations.SharedRunJob.y);
-            PCJ.asyncBroadcast(x, RunComputations.SharedRunJob.x);
-            PCJ.asyncBroadcast(potential, RunComputations.SharedRunJob.potential);
+            PCJ.asyncBroadcast(initWFStorage, RunComputations.SharedRunJob.initWFStorage);
+
         }
     }
 }

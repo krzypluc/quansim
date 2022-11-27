@@ -3,9 +3,11 @@ package compute;
 import java.io.*;
 import java.util.Map;
 
-import mathUtils.InitializeWaveFunction;
+import initializeWaveFunction.InitializeWaveFunction;
+import initializeWaveFunction.InitializeWaveFunctionStorage;
 import mathUtils.ParallelFFT;
-import mathUtils.ParallelComplexIntegrator;
+import parallelIntegrator.ParalellComplexIntegratorStorage;
+import parallelIntegrator.ParallelComplexIntegrator;
 import mathUtils.chebyshev.ChebyshevAprox;
 import miscellaneous.HDF5Handler;
 import org.apache.commons.math3.complex.Complex;
@@ -28,27 +30,23 @@ public class RunComputations implements StartPoint {
         potential,
 
         // ParallelComplexIntegrator storage
-        integralParallelComplexIntegrator,
+        parallelIntegralStorage,
 
         // InitializeWaveFunction storage
-        xInitializeWaveFunction,
-        yInitializeWaveFunction,
-        potentialInitializeWaveFunction
+        initWFStorage;
     }
 
     // SharedRunJob storage init
     double[] x;
     Complex[] y;
     double[] potential;
-    Complex integral = Complex.ZERO;
+    Complex integral;
 
     // ParallelComplexIntegrator storage
-    Complex integralParallelComplexIntegrator;
+    ParalellComplexIntegratorStorage parallelIntegralStorage;
 
     // InitializeWaveFunction storage
-    double[] xInitializeWaveFunction;
-    Complex[] yInitializeWaveFunction;
-    double[] potentialInitializeWaveFunction;
+    InitializeWaveFunctionStorage initWFStorage;
 
     static Map<String, Object> config;
     static Map<String, String> filePaths;
@@ -90,6 +88,8 @@ public class RunComputations implements StartPoint {
         potential = new double[RESOLUTION];
         integral = Complex.ZERO;
 
+        //ParallelComplexIntegrator storage init
+
         // Use constants as process id and number of processes
         int procID = PCJ.myId();
         int procCount = PCJ.threadCount();
@@ -104,12 +104,22 @@ public class RunComputations implements StartPoint {
         InitializeWaveFunction waveFunctionInit = new InitializeWaveFunction(y, x, potential, period, dx);
         waveFunctionInit.main();
 
+        // Wait for calculations
+        PCJ.waitFor(SharedRunJob.initWFStorage);
+
+        // Update values from initialization of wave function
+        y = initWFStorage.getY();
+        x = initWFStorage.getX();
+        potential = initWFStorage.getPotential();
+
         // Integrate parallely - putting value on "itegral"
         ParallelComplexIntegrator parallelIntegrator = new ParallelComplexIntegrator(y, x);
         parallelIntegrator.main();
 
-        PCJ.waitFor(SharedRunJob.y);
-        PCJ.waitFor(SharedRunJob.integral);
+        PCJ.waitFor(SharedRunJob.parallelIntegralStorage, 2);
+
+        // Update values from integral
+        integral = parallelIntegralStorage.getIntegralValue();
 
         // Normalize wave function
         for (int i = 0; i < y.length; i++) {
