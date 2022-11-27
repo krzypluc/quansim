@@ -15,9 +15,14 @@ import chebyshevPolynomials.ChebyshevAprox;
 import miscellaneous.HDF5Handler;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.*;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 import static java.lang.Math.PI;
 
+@Command(name = "accquansim", mixinStandardHelpOptions = true, version = "accquansim 0.1-beta",
+        description = "Simulation of wave function propagation.")
 @RegisterStorage(RunComputations.SharedRunJob.class)
 public class RunComputations implements StartPoint {
 
@@ -54,6 +59,10 @@ public class RunComputations implements StartPoint {
     static Map<String, Double> constants;
     static Map<String, Double> time;
     static Map<String, String> functions;
+
+    // Picocli parameters
+    @Option(names = {"-c", "--configPath"}, description = "Path to the calulcations config.", defaultValue = "config/config.yml")
+    static String configPath = "./config/config.yml";
 
     @Override
     public void main() throws IOException {
@@ -158,14 +167,6 @@ public class RunComputations implements StartPoint {
     }
 
     public static void main(String[] args) throws IOException {
-        String configPath;
-        try {
-            configPath = args[0];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("You need to provide path to config.");
-            throw e;
-        }
-
         config = YamlLoader.loadConfigFromYaml(configPath);
         filePaths = (Map<String, String>) config.get("filePaths");
         domain = (Map<String, Integer>) config.get("domain");
