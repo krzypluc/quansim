@@ -5,7 +5,7 @@ import java.util.Map;
 
 import mathUtils.InitializeWaveFunction;
 import mathUtils.ParallelFFT;
-import mathUtils.ParallelIntegrator;
+import mathUtils.ParallelComplexIntegrator;
 import mathUtils.chebyshev.ChebyshevAprox;
 import miscellaneous.HDF5Handler;
 import org.apache.commons.math3.complex.Complex;
@@ -21,13 +21,34 @@ public class RunComputations implements StartPoint {
 
     @Storage(RunComputations.class)
     public enum SharedRunJob {
-        x, y, integral, potential
+        // RunComputations storage
+        x,
+        y,
+        integral,
+        potential,
+
+        // ParallelComplexIntegrator storage
+        integralParallelComplexIntegrator,
+
+        // InitializeWaveFunction storage
+        xInitializeWaveFunction,
+        yInitializeWaveFunction,
+        potentialInitializeWaveFunction
     }
 
+    // SharedRunJob storage init
     private double[] x;
     private Complex[] y;
     private double[] potential;
     private Complex integral = Complex.ZERO;
+
+    // ParallelComplexIntegrator storage
+    Complex integralParallelComplexIntegrator;
+
+    // InitializeWaveFunction storage
+    double[] xInitializeWaveFunction;
+    Complex[] yInitializeWaveFunction;
+    double[] potentialInitializeWaveFunction;
 
     private static Map<String, Object> config;
     private static Map<String, String> filePaths;
@@ -48,6 +69,13 @@ public class RunComputations implements StartPoint {
         double startTime = (double) time.get("startTime");
         double endTime = (double) time.get("endTime");
         int timesteps = (int) ((endTime - startTime) / dt) + 1;
+
+        // Calculating time array
+        double[] time = new double[timesteps];
+        time[0] = startTime;
+        for (int i = 1; i < timesteps; i++){
+            time[i] = time[i - 1] + dt;
+        }
 
         // Constants
         double mass = (double) constants.get("mass");
@@ -73,14 +101,15 @@ public class RunComputations implements StartPoint {
         // Calculate values of initial wave function.
         // Getting and casting all values from returned array.
         // Calulcate integral in all processes.
-        InitializeWaveFunction waveFunctionInit = new InitializeWaveFunction(y, x, period, dx);
+        InitializeWaveFunction waveFunctionInit = new InitializeWaveFunction(y, x, potential, period, dx);
         waveFunctionInit.main();
 
         // Integrate parallely - putting value on "itegral"
-        ParallelIntegrator parallelIntegrator = new ParallelIntegrator();
+        ParallelComplexIntegrator parallelIntegrator = new ParallelComplexIntegrator(y, x);
         parallelIntegrator.main();
 
         PCJ.waitFor(SharedRunJob.y);
+        PCJ.waitFor(SharedRunJob.integral);
 
         // Normalize wave function
         for (int i = 0; i < y.length; i++) {
@@ -108,7 +137,7 @@ public class RunComputations implements StartPoint {
 
         // Saving to HDF5
         if (procID == 0) {
-            HDF5Handler.saveYandDerivative(x, yHistory, yDerHistory, timesteps, filePaths);
+            HDF5Handler.saveYandDerivative(x, yHistory, yDerHistory, potential, time, timesteps, filePaths);
         }
     }
 

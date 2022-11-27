@@ -29,6 +29,7 @@ if __name__ == "__main__":
             y.append(h5File[datasetName + "/y/" + str(i)][:])
             yDer.append(h5File[datasetName + "/yDer/" + str(i)][:])
         x = h5File[datasetName + "/x"][:]
+        potential = h5File[datasetName + "/potential"][:]
 
 
     for func, funcDer in zip(y, yDer):
@@ -36,4 +37,4 @@ if __name__ == "__main__":
         funcDer = np.array([complex(x, y) for x, y in funcDer])
 
     for func, funcDer in zip(y, yDer):
-        diagrams.ComplexTwoPlots(x, func, funcDer)
+        diagrams.ComplexThreePlots(x, func, potential, funcDer, title1="Wave Function", title2="Potential", title3="Wave Function Derivative")

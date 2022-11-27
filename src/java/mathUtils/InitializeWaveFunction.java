@@ -13,17 +13,18 @@ public class InitializeWaveFunction implements StartPoint {
     double[] x;
     double period;
     double dx;
+    double[] potential;
 
-    public InitializeWaveFunction(Complex[] y, double[] x, double period, double dx) {
+    public InitializeWaveFunction(Complex[] y, double[] x, double[] potential, double period, double dx) {
         this.period = period;
         this.x = x;
         this.y = y;
         this.dx = dx;
+        this.potential = potential;
     }
 
     @Override
     public void main() {
-        double[] potential = new double[x.length];
 
         int procID = PCJ.myId();
         int procCount = PCJ.threadCount();

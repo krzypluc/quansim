@@ -5,16 +5,20 @@ import org.apache.commons.math3.complex.Complex;
 import org.pcj.PCJ;
 import org.pcj.RegisterStorage;
 import org.pcj.StartPoint;
+import org.pcj.Storage;
 
 
 @RegisterStorage(RunComputations.SharedRunJob.class)
-public class ParallelIntegrator implements StartPoint {
+public class ParallelComplexIntegrator implements StartPoint {
+    Complex[] y;
+    double[] x;
+    public ParallelComplexIntegrator(Complex[] y, double[] x) {
+        this.y = y;
+        this.x = x;
+    }
 
     @Override
     public void main() {
-        double[] x = PCJ.get(0, RunComputations.SharedRunJob.x);
-        Complex[] y = PCJ.get(0, RunComputations.SharedRunJob.y);
-
         double dx = x[1] - x[0];
         Complex sumOfValues = Complex.ZERO;
         Complex firstValue = Complex.ZERO;

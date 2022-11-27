@@ -11,8 +11,11 @@ public class HDF5Handler {
             double[] x,
             Complex[][] yHistory,
             Complex[][] yDerHistory,
-            int timesteps, Map<String,
-            String> filePaths) {
+            double[] potential,
+            double[] time,
+            int timesteps,
+            Map<String, String> filePaths) {
+
         int yLength = x.length;
 
         String groupName = GroupName.getGroupName();
@@ -32,6 +35,9 @@ public class HDF5Handler {
                 yDerTransformedDouble[i][j][1] = yDerHistory[i][j].getImaginary();
             }
         }
+
+        writer.writeDoubleArray(groupName + "/potential/", potential);
+        writer.writeDoubleArray(groupName + "/time/", time);
 
         for (int i = 0; i < timesteps; i++) {
             writer.writeDoubleMatrix(groupName + "/y/" + i, yTransformedDouble[i]);
