@@ -37,10 +37,10 @@ public class RunComputations implements StartPoint {
     }
 
     // SharedRunJob storage init
-    private double[] x;
-    private Complex[] y;
-    private double[] potential;
-    private Complex integral = Complex.ZERO;
+    double[] x;
+    Complex[] y;
+    double[] potential;
+    Complex integral = Complex.ZERO;
 
     // ParallelComplexIntegrator storage
     Complex integralParallelComplexIntegrator;
@@ -50,11 +50,11 @@ public class RunComputations implements StartPoint {
     Complex[] yInitializeWaveFunction;
     double[] potentialInitializeWaveFunction;
 
-    private static Map<String, Object> config;
-    private static Map<String, String> filePaths;
-    private static Map<String, Integer> domain;
-    private static Map<String, Double> constants;
-    private static Map<String, Double> time;
+    static Map<String, Object> config;
+    static Map<String, String> filePaths;
+    static Map<String, Integer> domain;
+    static Map<String, Double> constants;
+    static Map<String, Double> time;
 
     @Override
     public void main() throws IOException {
