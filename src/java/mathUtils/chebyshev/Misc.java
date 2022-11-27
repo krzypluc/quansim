@@ -1,8 +1,4 @@
-<<<<<<< HEAD:src/main/java/chebyshevPolynomials/Misc.java
-package chebyshevPolynomials;
-=======
 package mathUtils.chebyshev;
->>>>>>> main:src/java/mathUtils/chebyshev/Misc.java
 
 import mathUtils.BesselFunctions;
 import org.apache.commons.lang3.ArrayUtils;

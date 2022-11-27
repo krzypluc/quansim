@@ -5,12 +5,7 @@ size.txt
 
 hdf5/*
 
-<<<<<<< HEAD
-__pycache__
-
-=======
 __pycache__/
->>>>>>> main
 *.pyc
 
 .idea
