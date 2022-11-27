@@ -11,8 +11,16 @@ public class HDF5Handler {
             double[] x,
             Complex[][] yHistory,
             Complex[][] yDerHistory,
+<<<<<<< HEAD:src/main/java/miscellaneous/HDF5Handler.java
+            double[] potential,
+            double[] time,
+            int timesteps,
+            Map<String, String> filePaths) {
+
+=======
             int timesteps, Map<String,
             String> filePaths) {
+>>>>>>> main:src/java/miscellaneous/HDF5Handler.java
         int yLength = x.length;
 
         String groupName = GroupName.getGroupName();
@@ -33,6 +41,12 @@ public class HDF5Handler {
             }
         }
 
+<<<<<<< HEAD:src/main/java/miscellaneous/HDF5Handler.java
+        writer.writeDoubleArray(groupName + "/potential/", potential);
+        writer.writeDoubleArray(groupName + "/time/", time);
+
+=======
+>>>>>>> main:src/java/miscellaneous/HDF5Handler.java
         for (int i = 0; i < timesteps; i++) {
             writer.writeDoubleMatrix(groupName + "/y/" + i, yTransformedDouble[i]);
             writer.writeDoubleMatrix(groupName + "/yDer/" + i, yDerTransformedDouble[i]);

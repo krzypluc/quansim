@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:src/main/java/parallelFFT/FourierTransformUtilities.java
+package parallelFFT;
+========
 package mathUtils;
+>>>>>>>> main:src/main/java/mathUtils/FourierTransformUtilities.java
 
 
 import org.apache.commons.math3.complex.Complex;
