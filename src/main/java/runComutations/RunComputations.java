@@ -2,6 +2,7 @@ package runComutations;
 
 import java.io.*;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import initializeWaveFunction.InitializeWaveFunction;
 import initializeWaveFunction.InitializeWaveFunctionStorage;
@@ -21,10 +22,11 @@ import picocli.CommandLine.Option;
 
 import static java.lang.Math.PI;
 
+
+@RegisterStorage(RunComputations.SharedRunJob.class)
 @Command(name = "accquansim", mixinStandardHelpOptions = true, version = "accquansim 0.1-beta",
         description = "Simulation of wave function propagation.")
-@RegisterStorage(RunComputations.SharedRunJob.class)
-public class RunComputations implements StartPoint {
+public class RunComputations implements StartPoint, Callable<Void> {
 
     @Storage(RunComputations.class)
     public enum SharedRunJob {
@@ -166,7 +168,8 @@ public class RunComputations implements StartPoint {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    @Override
+    public Void call() throws IOException {
         config = YamlLoader.loadConfigFromYaml(configPath);
         filePaths = (Map<String, String>) config.get("filePaths");
         domain = (Map<String, Integer>) config.get("domain");
@@ -175,9 +178,16 @@ public class RunComputations implements StartPoint {
         functions = (Map<String, String>) config.get("functions");
 
         String nodesFile = filePaths.get("nodesFile");
-        
+
         PCJ.executionBuilder(RunComputations.class)
                 .addNodes(new File(nodesFile))
                 .start();
+
+        return null;
+    }
+
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new RunComputations()).execute(args);
+        System.exit(exitCode);
     }
 }
