@@ -55,6 +55,7 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.33</version>
         </dependency>
+<<<<<<< HEAD
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -66,6 +67,11 @@
             <artifactId>picocli</artifactId>
             <version>4.7.0</version>
         </dependency>
+=======
+
+
+
+>>>>>>> main
     </dependencies>
 
     <build>
@@ -83,7 +89,11 @@
                             <transformers>
                                 <transformer implementation=
                                                      "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+<<<<<<< HEAD
                                     <mainClass>runComutations.RunComputations</mainClass>
+=======
+                                    <mainClass>compute.RunComputations</mainClass>
+>>>>>>> main
                                 </transformer>
                             </transformers>
                         </configuration>

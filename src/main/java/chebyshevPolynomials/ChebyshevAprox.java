@@ -1,4 +1,8 @@
+<<<<<<< HEAD:src/main/java/chebyshevPolynomials/ChebyshevAprox.java
 package chebyshevPolynomials;
+=======
+package mathUtils.chebyshev;
+>>>>>>> main:src/java/mathUtils/chebyshev/ChebyshevAprox.java
 
 import mathUtils.DerivativeFFT;
 import mathUtils.SavitzkyGolay;

@@ -1,4 +1,8 @@
+<<<<<<< HEAD:src/main/java/parallelFFT/ParallelFFT2.java
 package parallelFFT;
+=======
+package mathUtils;
+>>>>>>> main:src/java/mathUtils/ParallelFFT2.java
 
 public class ParallelFFT2 {
     /*
