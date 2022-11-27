@@ -16,13 +16,8 @@ domain:
   resolutionExpotential: 8
 
 functions:
-<<<<<<< HEAD
-  potential: "NONE"
-  waveFunction: "GAUSSIAN"
-=======
   potential: "default"
   waveFunction: "default"
->>>>>>> main
 
 filePaths:
   nodesFile: "nodes.txt"

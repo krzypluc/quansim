@@ -16,14 +16,8 @@ def ComplexTwoPlots(x, y1, y2, title1="", title2="", title="", fname="", xmin=No
     ax[1].set(xlim=(xmin, xmax), ylim=(ymin, ymax))
     plt.show()
 
-<<<<<<< HEAD
-def ComplexThreePlots(x, y1, y2, y3, title1="", title2="", title3="", xmin=None, xmax=None, ymin=None, ymax=None):
-    fig, ax = plt.subplots(1, 3)
-    fig.set_size_inches(18.5, 10.5)
-=======
 def ComplexThreePlots(x, y1, y2, y3, title1, title2, title3, xmin=None, xmax=None, ymin=None, ymax=None):
     fig, ax = plt.subplots(1, 3)
->>>>>>> main
     ax[0].plot(x, y1.real, x, y1.imag)
     ax[0].title.set_text(title1)
     ax[1].plot(x, y2.real, x, y2.imag)
