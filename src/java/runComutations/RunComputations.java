@@ -1,23 +1,23 @@
-package compute;
+package runComutations;
 
 import java.io.*;
 import java.util.Map;
 
 import initializeWaveFunction.InitializeWaveFunction;
 import initializeWaveFunction.InitializeWaveFunctionStorage;
-import mathUtils.ParallelFFT;
+import mathUtils.Potential;
+import mathUtils.WaveFunctions;
+import miscellaneous.YamlLoader;
+import parallelFFT.ParallelFFT;
 import parallelIntegrator.ParalellComplexIntegratorStorage;
 import parallelIntegrator.ParallelComplexIntegrator;
-import mathUtils.chebyshev.ChebyshevAprox;
+import chebyshevPolynomials.ChebyshevAprox;
 import miscellaneous.HDF5Handler;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.*;
 
 import static java.lang.Math.PI;
-import static mathUtils.Functions.*;
 
-
-@SuppressWarnings("unused")
 @RegisterStorage(RunComputations.SharedRunJob.class)
 public class RunComputations implements StartPoint {
 
@@ -53,6 +53,7 @@ public class RunComputations implements StartPoint {
     static Map<String, Integer> domain;
     static Map<String, Double> constants;
     static Map<String, Double> time;
+    static Map<String, String> functions;
 
     @Override
     public void main() throws IOException {
@@ -67,6 +68,10 @@ public class RunComputations implements StartPoint {
         double startTime = (double) time.get("startTime");
         double endTime = (double) time.get("endTime");
         int timesteps = (int) ((endTime - startTime) / dt) + 1;
+
+        // Wave function and potential load
+        WaveFunctions.WaveFunction waveFunctionType = WaveFunctions.WaveFunction.valueOf(functions.get("waveFunction"));
+        Potential.PotentialType potentialType = Potential.PotentialType.valueOf(functions.get("potential"));
 
         // Calculating time array
         double[] time = new double[timesteps];
@@ -101,7 +106,7 @@ public class RunComputations implements StartPoint {
         // Calculate values of initial wave function.
         // Getting and casting all values from returned array.
         // Calulcate integral in all processes.
-        InitializeWaveFunction waveFunctionInit = new InitializeWaveFunction(y, x, potential, period, dx);
+        InitializeWaveFunction waveFunctionInit = new InitializeWaveFunction(y, x, potential, period, dx, waveFunctionType, potentialType);
         waveFunctionInit.main();
 
         // Wait for calculations
@@ -161,11 +166,12 @@ public class RunComputations implements StartPoint {
             throw e;
         }
 
-        config = loadConfigFromYaml(configPath);
+        config = YamlLoader.loadConfigFromYaml(configPath);
         filePaths = (Map<String, String>) config.get("filePaths");
         domain = (Map<String, Integer>) config.get("domain");
         constants = (Map<String, Double>) config.get("constants");
         time = (Map<String, Double>) config.get("time");
+        functions = (Map<String, String>) config.get("functions");
 
         String nodesFile = filePaths.get("nodesFile");
         

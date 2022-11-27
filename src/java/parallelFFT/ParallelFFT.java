@@ -1,6 +1,6 @@
-package mathUtils;
+package parallelFFT;
 
-import compute.RunComputations;
+import runComutations.RunComputations;
 import org.apache.commons.math3.complex.Complex;
 import org.pcj.PCJ;
 import org.pcj.RegisterStorage;

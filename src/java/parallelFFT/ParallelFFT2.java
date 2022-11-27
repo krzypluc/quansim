@@ -1,4 +1,4 @@
-package mathUtils;
+package parallelFFT;
 
 public class ParallelFFT2 {
     /*

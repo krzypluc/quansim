@@ -1,4 +1,4 @@
-package mathUtils.chebyshev;
+package chebyshevPolynomials;
 
 import mathUtils.DerivativeFFT;
 import mathUtils.SavitzkyGolay;

@@ -1,4 +1,4 @@
-package mathUtils.chebyshev;
+package chebyshevPolynomials;
 
 import mathUtils.BesselFunctions;
 import org.apache.commons.lang3.ArrayUtils;
