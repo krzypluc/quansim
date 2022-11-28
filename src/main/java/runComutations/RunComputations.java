@@ -70,6 +70,9 @@ public class RunComputations implements StartPoint, Callable<Void> {
     @Option(names = {"-c", "--configPath"}, description = "Path to the calulcations config.", defaultValue = "config/config.yml")
     static String configPath = "./config/config.yml";
 
+    @Option(names = {"-n", "--nodesFile"}, description = "Path to the file describing nodes.", defaultValue = "nodes.txt")
+    static String nodesFile = "nodes.txt";
+
     @Override
     public void main() throws IOException {
         // Seting values from config
@@ -180,8 +183,6 @@ public class RunComputations implements StartPoint, Callable<Void> {
         constants = (Map<String, Double>) config.get("constants");
         time = (Map<String, Double>) config.get("time");
         functions = (Map<String, String>) config.get("functions");
-
-        String nodesFile = filePaths.get("nodesFile");
 
         PCJ.executionBuilder(RunComputations.class)
                 .addNodes(new File(nodesFile))

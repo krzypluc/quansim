@@ -20,6 +20,5 @@ functions:
   waveFunction: "GAUSSIAN"
 
 filePaths:
-  nodesFile: "nodes.txt"
   hdf5JavaFile: "hdf5/quancalculations.h5"
   hdf5PythonFile: "../hdf5/quancalculations.h5"
