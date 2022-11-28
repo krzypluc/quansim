@@ -55,7 +55,7 @@ public class ParallelComplexIntegrator implements StartPoint {
 
         if (procID == 0) {
             integral = PCJ.reduce(
-                    (subtotal, element) -> subtotal.add(element),
+                    ParalellComplexIntegratorStorage::add,
                     RunComputations.SharedRunJob.parallelIntegralStorage
             );
             // Broadcast to all processes

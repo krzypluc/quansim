@@ -1,24 +1,28 @@
 package runComutations;
 
-import java.io.*;
-import java.util.Map;
-import java.util.concurrent.Callable;
-
+import chebyshevPolynomials.ChebyshevAprox;
 import initializeWaveFunction.InitializeWaveFunction;
 import initializeWaveFunction.InitializeWaveFunctionStorage;
 import mathUtils.Potential;
 import mathUtils.WaveFunctions;
+import miscellaneous.HDF5Handler;
 import miscellaneous.YamlLoader;
+import org.apache.commons.math3.complex.Complex;
+import org.pcj.PCJ;
+import org.pcj.RegisterStorage;
+import org.pcj.StartPoint;
+import org.pcj.Storage;
 import parallelFFT.ParallelFFT;
 import parallelIntegrator.ParalellComplexIntegratorStorage;
 import parallelIntegrator.ParallelComplexIntegrator;
-import chebyshevPolynomials.ChebyshevAprox;
-import miscellaneous.HDF5Handler;
-import org.apache.commons.math3.complex.Complex;
-import org.pcj.*;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static java.lang.Math.PI;
 
